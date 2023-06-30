@@ -1,4 +1,5 @@
 click
 rich
 pytest
+pytest-coverage
 tox
