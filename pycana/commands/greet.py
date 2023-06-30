@@ -1,6 +1,8 @@
 import click
 from rich.console import Console
 
+# FIXME: add info command
+
 
 console = Console()
 
