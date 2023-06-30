@@ -37,12 +37,6 @@ from pycana.models import SpellCriteria
     default=None,
     help='Filters the results for "ritual" containing the given string.'
 )
-@click.option(
-    '-v', '--verbose',
-    is_flag=True,
-    help='Enables more extensive logging messages.',
-    default=False,
-)
 def find(db_file: str, book: str, name: str, level: str, ritual: str) -> None:
     """
     Finds spells by criteria from the specified database.
