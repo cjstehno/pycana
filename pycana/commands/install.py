@@ -1,3 +1,6 @@
+"""
+Command used to install spells in a database.
+"""
 import click
 from rich.console import Console
 
@@ -22,7 +25,15 @@ from pycana.services.xml_loader import load_all_spells
     help='Enables more extensive logging messages.',
     default=False,
 )
-def install(source_directory: str, db_file: str, verbose: bool):
+def install(source_directory: str, db_file: str, verbose: bool) -> None:
+    """
+    Installs the spells from the specified source directory into the given database file.
+
+    Args:
+        source_directory: the source directory (containing .xml.gz files)
+        db_file: the database file path
+        verbose: whether extra logging information should be presented
+    """
     console = Console()
     console.print(f"Installing spells from {source_directory} into {db_file}...", style='blue')
 
@@ -39,4 +50,4 @@ def install(source_directory: str, db_file: str, verbose: bool):
         verbose=verbose,
     )
 
-    console.print(f"Done.", style='green b')
+    console.print("Done.", style='green b')

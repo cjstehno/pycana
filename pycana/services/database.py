@@ -1,3 +1,6 @@
+"""
+Functions providing access to the database.
+"""
 import sqlite3
 from typing import Final, Dict, List, Any
 
@@ -64,11 +67,11 @@ _INFO_CASTERS: Final[str] = "select count(*) from spells where lower(casters) li
 
 
 def create_db(db_path: str) -> None:
-    with sqlite3.connect(db_path) as cn:
-        c = cn.cursor()
-        c.execute(_CREATE_SQL)
-        c.close()
-        cn.commit()
+    with sqlite3.connect(db_path) as conn:
+        cursor = conn.cursor()
+        cursor.execute(_CREATE_SQL)
+        cursor.close()
+        conn.commit()
 
 
 def load_db(console: Console, db_path: str, spells: List[Spell], verbose: bool = False) -> None:
@@ -77,30 +80,30 @@ def load_db(console: Console, db_path: str, spells: List[Spell], verbose: bool =
     if verbose:
         console.print(f"Loading {len(spells)} spells...", style='yellow')
 
-    with sqlite3.connect(db_path) as cn:
-        c = cn.cursor()
+    with sqlite3.connect(db_path) as conn:
+        cursor = conn.cursor()
 
         for spell in spells:
-            c.execute(_SAVE_SQL, spell.to_row())
+            cursor.execute(_SAVE_SQL, spell.to_row())
 
             if verbose:
                 console.print(f"\u2714 Stored: {spell}", style='green i')
 
             stored_count += 1
 
-        c.close()
-        cn.commit()
+        cursor.close()
+        conn.commit()
 
         if verbose:
             console.print(f"Stored all {stored_count} spells.", style='blue b')
 
 
 def clear_db(db_path: str) -> None:
-    with sqlite3.connect(db_path) as cn:
-        c = cn.cursor()
-        c.execute(_CLEAR_SQL)
-        c.close()
-        cn.commit()
+    with sqlite3.connect(db_path) as conn:
+        cursor = conn.cursor()
+        cursor.execute(_CLEAR_SQL)
+        cursor.close()
+        conn.commit()
 
 
 # FIXME: list spells matching criteria - as AND
@@ -122,14 +125,14 @@ def clear_db(db_path: str) -> None:
 def find_spells(db_path: str, criteria: SpellCriteria = None) -> List[Spell]:
     spells = []
 
-    with sqlite3.connect(db_path) as cn:
-        c = cn.cursor()
-        c.execute(f"{_FIND_SQL} {criteria.where() if criteria and not criteria.empty() else ''}")
-        results = c.fetchall()
+    with sqlite3.connect(db_path) as conn:
+        cursor = conn.cursor()
+        cursor.execute(f"{_FIND_SQL} {criteria.where() if criteria and not criteria.empty() else ''}")
+        results = cursor.fetchall()
         for row in results:
             spells.append(Spell.from_row(row))
-        c.close()
-        cn.commit()
+        cursor.close()
+        conn.commit()
 
     return spells
 
@@ -149,18 +152,18 @@ def db_info(db_path: str) -> Dict[str, Dict[str, int]]:
         'casters': {}
     }
 
-    for bc in _query(db_path, _INFO_BOOKS):
-        info['books'][bc[0]] = bc[1]
+    for book in _query(db_path, _INFO_BOOKS):
+        info['books'][book[0]] = book[1]
 
-    for lv in _query(db_path, _INFO_LEVELS):
-        info['levels'][lv[0]] = lv[1]
+    for level in _query(db_path, _INFO_LEVELS):
+        info['levels'][level[0]] = level[1]
 
-    for sc in _query(db_path, _INFO_SCHOOLS):
-        info['schools'][sc[0]] = sc[1]
+    for school in _query(db_path, _INFO_SCHOOLS):
+        info['schools'][school[0]] = school[1]
 
     for caster in Caster.__members__.values():
-        for cs in _query(db_path, f"{_INFO_CASTERS} '%{caster.name.lower()}%'"):
-            info['casters'][caster.name] = cs[0]
+        for casters in _query(db_path, f"{_INFO_CASTERS} '%{caster.name.lower()}%'"):
+            info['casters'][caster.name] = casters[0]
 
     return info
 
@@ -168,13 +171,13 @@ def db_info(db_path: str) -> Dict[str, Dict[str, int]]:
 def _query(db_path: str, sql: str) -> List[Any]:
     query_results = []
 
-    with sqlite3.connect(db_path) as cn:
-        c = cn.cursor()
-        c.execute(sql)
-        results = c.fetchall()
+    with sqlite3.connect(db_path) as conn:
+        cursor = conn.cursor()
+        cursor.execute(sql)
+        results = cursor.fetchall()
         for row in results:
             query_results.append(row)
-        c.close()
-        cn.commit()
+        cursor.close()
+        conn.commit()
 
     return query_results

@@ -1,3 +1,6 @@
+"""
+Command used to find spells in the database by criteria.
+"""
 import click
 from rich.console import Console
 from rich.markdown import Markdown
@@ -40,7 +43,21 @@ from pycana.models import SpellCriteria
     help='Enables more extensive logging messages.',
     default=False,
 )
-def find(db_file: str, book: str, name: str, level: str, ritual: str, verbose: bool):
+def find(db_file: str, book: str, name: str, level: str, ritual: str) -> None:
+    """
+    Finds spells by criteria from the specified database.
+
+    Args:
+        db_file: the database file path
+        book: optional book criteria
+        name: optional name criteria
+        level: optional level criteria
+        ritual: optional ritual criteria
+
+
+    Returns:
+
+    """
     console = Console()
 
     # FIXME: need a global criteria field (searches everywhere)
@@ -90,7 +107,7 @@ def find(db_file: str, book: str, name: str, level: str, ritual: str, verbose: b
     console.print(table)
 
     selected = console.input(f"Which one would you like to view (1-{len(spells)}; 0 to quit)? ")
-    if not selected.strip() == '0':
+    if selected.strip() != '0':
         spell = spells[(int(selected) - 1)]
 
         console.print(f"\n{spell.name}", style='red b')
@@ -113,16 +130,16 @@ def find(db_file: str, book: str, name: str, level: str, ritual: str, verbose: b
 
 
 def _display_casters(casters) -> str:
-    return ', '.join(map(lambda c: str(c), casters))
+    return ', '.join(map(str, casters))
 
 
 def _display_components(components, details: bool = False) -> str:
     comps = []
-    for c in components:
-        if c['type'] == 'material':
-            comps.append(f"M{' (' + c['details'] + ')' if details and c['details'] else ''}")
+    for comp in components:
+        if comp['type'] == 'material':
+            comps.append(f"M{' (' + comp['details'] + ')' if details and comp['details'] else ''}")
         else:
-            comps.append(c['type'][0].upper())
+            comps.append(comp['type'][0].upper())
     return ', '.join(comps)
 
 

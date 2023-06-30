@@ -28,25 +28,7 @@ class School(Enum):
 
     @staticmethod
     def from_str(label: str) -> School:
-        lbl = label.upper()
-        if lbl == 'ABJURATION':
-            return School.ABJURATION
-        elif lbl == 'CONJURATION':
-            return School.CONJURATION
-        elif lbl == 'DIVINATION':
-            return School.DIVINATION
-        elif lbl == 'ENCHANTMENT':
-            return School.ENCHANTMENT
-        elif lbl == 'EVOCATION':
-            return School.EVOCATION
-        elif lbl == 'ILLUSION':
-            return School.ILLUSION
-        elif lbl == 'NECROMANCY':
-            return School.NECROMANCY
-        elif lbl == 'TRANSMUTATION':
-            return School.TRANSMUTATION
-        else:
-            raise NotImplementedError()
+        return School[label.upper()]
 
 
 @unique
@@ -68,25 +50,7 @@ class Caster(Enum):
 
     @staticmethod
     def from_str(label: str) -> Caster:
-        lbl = label.upper()
-        if lbl == 'BARD':
-            return Caster.BARD
-        elif lbl == 'CLERIC':
-            return Caster.CLERIC
-        elif lbl == 'DRUID':
-            return Caster.DRUID
-        elif lbl == 'PALADIN':
-            return Caster.PALADIN
-        elif lbl == 'RANGER':
-            return Caster.RANGER
-        elif lbl == 'SORCERER':
-            return Caster.SORCERER
-        elif lbl == 'WARLOCK':
-            return Caster.WARLOCK
-        elif lbl == 'WIZARD':
-            return Caster.WIZARD
-        else:
-            raise NotImplementedError()
+        return Caster[label.upper()]
 
     @staticmethod
     def as_string(casters: List[Caster]) -> str:
@@ -143,7 +107,7 @@ class Spell:
             duration=row[8],
             casting_time=row[9],
             description=row[10],
-            casters=list(map(lambda x: Caster.from_str(x), str(row[11]).split(','))),
+            casters=list(map(Caster.from_str, str(row[11]).split(','))),
             components=json.loads(row[12]),
         )
 
@@ -208,6 +172,7 @@ class SpellCriteria:
     def _apply_clause(clauses: List[str], name: str, value: str) -> None:
         if SpellCriteria._not_empty(value):
             if value.startswith('(') and value.endswith(')'):
+                # pylint: disable=eval-used
                 clauses.append(SpellCriteria._or_values(name, eval(value)))
             else:
                 clauses.append(SpellCriteria._like_contains(name, value))
@@ -221,6 +186,7 @@ class SpellCriteria:
     def _apply_int_clause(clauses: List[str], name: str, value: str) -> None:
         if SpellCriteria._not_empty(value):
             if value.startswith('(') and value.endswith(')'):
+                # pylint: disable=eval-used
                 items = map(lambda x: SpellCriteria._value_eq(name, x), eval(value))
                 clauses.append(f"({' OR '.join(items)})")
             else:

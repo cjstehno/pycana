@@ -1,3 +1,6 @@
+"""
+Functions used to load Spell XML files (zipped or unzipped)
+"""
 from __future__ import annotations
 
 import gzip
@@ -65,7 +68,7 @@ def load_spells(
         with gzip.open(xml_file, 'rb') as f:
             return _read_xml(console, xml_file, f, verbose)
     else:
-        with open(xml_file, 'r') as f:
+        with open(xml_file, 'r', encoding='utf-8') as f:
             return _read_xml(console, xml_file, f, verbose)
 
 

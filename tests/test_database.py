@@ -1,36 +1,16 @@
-from pathlib import Path
 from typing import List, Callable, Final
 
 import pytest
 from rich.console import Console
 
-from pycana.services.database import create_db, clear_db, db_info, load_db, find_spells
 from pycana.models import Spell, School, Caster, SpellCriteria
-from pycana.services.xml_loader import load_spells
+from pycana.services.database import db_info, load_db, find_spells
 
 _A_SPELL_NAMES: Final[List[str]] = [
     'Acid Splash', 'Aid', 'Alarm', 'Alter Self', 'Animal Friendship', 'Animal Messenger',
     'Animal Shapes', 'Animate Dead', 'Animate Objects', 'Antilife Shell', 'Antimagic Field',
     'Antipathy or Sympathy', 'Arcane Eye', 'Arcane Lock', 'Astral Projection', 'Augury', 'Awaken'
 ]
-
-
-@pytest.fixture()
-def spells_db(tmp_path) -> str:
-    db_path = Path(tmp_path, 'test.db')
-    create_db(str(db_path))
-    yield db_path
-    clear_db(str(db_path))
-
-
-@pytest.fixture()
-def spells_from() -> Callable[[str], List[Spell]]:
-    # FIXME: be nice to accept a varargs type thing
-    def _here(name: str):
-        p = Path(__file__).parent.joinpath('resources', name)
-        return load_spells(Console(), str(p), verbose=False, zipped=False)
-
-    return _here
 
 
 def test_db_info(spells_db: str, spells_from: Callable[[str], List[Spell]]) -> None:
@@ -129,7 +109,7 @@ def test_find_spells_mapper(spells_db: str, spells_from: Callable[[str], List[Sp
         (SpellCriteria(name='animal', level='(1, 2)'), ['Animal Friendship', 'Animal Messenger']),
         (SpellCriteria(name='animal', level='2'), ['Animal Messenger']),
         (SpellCriteria(book='ogl A', range="('30', '60')", caster='cleric'), ['Aid']),
-        (SpellCriteria(duration='instantaneous',casting_time='action'), ['Acid Splash']),
+        (SpellCriteria(duration='instantaneous', casting_time='action'), ['Acid Splash']),
         (SpellCriteria(school='necromancy'), ['Animate Dead', 'Astral Projection']),
         (SpellCriteria(ritual=True), ['Alarm', 'Animal Messenger', 'Augury']),
         (SpellCriteria(general='dead'), ['Animate Dead', 'Antilife Shell'])
@@ -148,4 +128,3 @@ def test_find_spells(
 
     assert len(found_spells) == len(expected_results)
     assert set(map(lambda x: x.name, found_spells)) == set(expected_results)
-
