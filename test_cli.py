@@ -1,5 +1,5 @@
 from click.testing import CliRunner
-from cli import greet
+from pycana.commands.greet  import greet
 
 
 def test_greet():
