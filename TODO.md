@@ -8,3 +8,5 @@
 - formatting
 - packaging (for deployment)
 - finish testing
+- add command to select a random spell (or multiple) matching query criteria
+- add ability to generate spell lists from caster, and spell counts at levels

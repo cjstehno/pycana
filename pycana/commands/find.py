@@ -2,6 +2,7 @@
 Command used to find spells in the database by criteria.
 """
 import click
+import html
 from rich.console import Console
 from rich.markdown import Markdown
 from rich.table import Table
@@ -28,6 +29,11 @@ from pycana.models import SpellCriteria
     help='Filters the results for "name" containing the given string.'
 )
 @click.option(
+    '--category',
+    default=None,
+    help='Filters the results for "category" containing the given string.'
+)
+@click.option(
     '-l', '--level',
     default=None,
     help='Filters the results for "level" matching the criteria.'
@@ -37,7 +43,26 @@ from pycana.models import SpellCriteria
     default=None,
     help='Filters the results for "ritual" containing the given string.'
 )
-def find(db_file: str, book: str, name: str, level: str, ritual: str) -> None:
+@click.option(
+    '-c', '--caster',
+    default=None,
+    help='Filers the results for "caster" containing the given string.'
+)
+@click.option(
+    '--limit',
+    default=None,
+    help='Limits the results to the specified number of rows.'
+)
+def find(
+    db_file: str,
+    book: str,
+    name: str,
+    category: str,
+    level: str,
+    ritual: str,
+    caster: str,
+    limit: int,
+) -> None:
     """
     Finds spells by criteria from the specified database.
 
@@ -54,18 +79,24 @@ def find(db_file: str, book: str, name: str, level: str, ritual: str) -> None:
     """
     console = Console()
 
-    # FIXME: need a global criteria field (searches everywhere)
-    # FIXME: would be nice to be able to specify cols shown
-    # FIXME: a param to limit the number of rows
-    # FIXME: add rest of fields
+    # FIXME: would be nice to be able to specify cols shown (or show limited set)
+    # FIXME: sorting
+    # FIXME: a param to limit the number of rows (offset?)
+    # FIXME: add fields: shcool, guild, global
 
     criteria = SpellCriteria()
 
     if book and len(book) > 0:
-        criteria.book = book
+        criteria.book = html.unescape(book)
 
     if name and len(name) > 0:
-        criteria.name = name
+        criteria.name = html.unescape(name)
+
+    if category and len(category) > 0:
+        criteria.category = category
+
+    if caster and len(caster) > 0:
+        criteria.caster = caster
 
     if level and len(level) > 0:
         criteria.level = level
@@ -73,7 +104,8 @@ def find(db_file: str, book: str, name: str, level: str, ritual: str) -> None:
     if ritual and len(ritual) > 0:
         criteria.ritual = ritual.lower() in ['true', 'yes', 'y']
 
-    spells = find_spells(db_file, criteria)
+    spells = find_spells(db_file, criteria) # FIXME: limit shoudl be in query
+    spells = spells[0:int(limit)]
 
     table = Table(highlight=True)
 
@@ -82,6 +114,7 @@ def find(db_file: str, book: str, name: str, level: str, ritual: str) -> None:
     table.add_column("Name", no_wrap=True)
     table.add_column("Lvl")
     table.add_column("School")
+    table.add_column("Category")
     table.add_column("Ritual")
     table.add_column("Guild")
     table.add_column("Casters")
@@ -92,7 +125,11 @@ def find(db_file: str, book: str, name: str, level: str, ritual: str) -> None:
         components = _display_components(spell.components)
         table.add_row(
             str(idx+1),
-            spell.book, spell.name, str(spell.level), str(spell.school),
+            html.unescape(spell.book),
+            html.unescape(spell.name),
+            str(spell.level),
+            str(spell.school),
+            spell.category if spell.category else '-',
             'Y' if spell.ritual else 'N',
             'Y' if spell.guild else 'N',
             casters, components,
@@ -104,7 +141,7 @@ def find(db_file: str, book: str, name: str, level: str, ritual: str) -> None:
     if selected.strip() != '0':
         spell = spells[(int(selected) - 1)]
 
-        console.print(f"\n{spell.name}", style='red b')
+        console.print(f"\n{html.unescape(spell.name)}", style='red b')
         console.print(
             f"level {spell.level} {spell.school}{' (ritual)' if spell.ritual else ''}",
             style='white b i'
@@ -112,7 +149,7 @@ def find(db_file: str, book: str, name: str, level: str, ritual: str) -> None:
         if spell.category and len(spell.category) > 0:
             console.print(f"Category: {spell.category}")
 
-        _output_field(console, 'Book', spell.book)
+        _output_field(console, 'Book', html.unescape(spell.book))
         _output_field(console, 'Range', spell.range)
         _output_field(console, 'Duration', spell.duration)
         _output_field(console, 'Casting Time', spell.casting_time)
