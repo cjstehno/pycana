@@ -51,7 +51,7 @@ from pycana.models import SpellCriteria
 @click.option(
     '--limit',
     default=None,
-    help='Limits the results to the specified number of rows.'
+    help='Limits the results to the specified number of rows (unlimited by default).'
 )
 def find(
     db_file: str,
@@ -72,17 +72,14 @@ def find(
         name: optional name criteria
         level: optional level criteria
         ritual: optional ritual criteria
-
-
-    Returns:
-
     """
     console = Console()
 
     # FIXME: would be nice to be able to specify cols shown (or show limited set)
     # FIXME: sorting
-    # FIXME: a param to limit the number of rows (offset?)
     # FIXME: add fields: shcool, guild, global
+    # FIXME: why do options appear as args in help?
+    # FIXME: commands should use a default location for database if not specified100
 
     criteria = SpellCriteria()
 
@@ -105,7 +102,13 @@ def find(
         criteria.ritual = ritual.lower() in ['true', 'yes', 'y']
 
     spells = find_spells(db_file, criteria) # FIXME: limit shoudl be in query
-    spells = spells[0:int(limit)]
+
+    if limit:
+        spells = spells[0:int(limit)]
+
+    if len(spells) == 0:
+        console.print("No spells found matching your criteria.", style='yellow b i')
+        return
 
     table = Table(highlight=True)
 
