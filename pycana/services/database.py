@@ -2,7 +2,7 @@
 Functions providing access to the database.
 """
 import sqlite3
-from typing import Final, Dict, List, Any
+from typing import Final, Dict, List, Any, Optional
 
 from rich.console import Console
 
@@ -126,12 +126,14 @@ def clear_db(db_path: str) -> None:
 # should also support global='foo' which will find all with any field containing
 
 
-def find_spells(db_path: str, criteria: SpellCriteria = None) -> List[Spell]:
+def find_spells(db_path: str, criteria: SpellCriteria = None, limit: int = None) -> List[Spell]:
     spells = []
 
     with sqlite3.connect(db_path) as conn:
         cursor = conn.cursor()
-        cursor.execute(f"{_FIND_SQL} {criteria.where() if criteria and not criteria.empty() else ''}")
+        cursor.execute(
+            f"{_FIND_SQL} {criteria.where() if criteria and not criteria.empty() else ''} {_apply_limit(limit)}",
+        )
         results = cursor.fetchall()
         for row in results:
             spells.append(Spell.from_row(row))
@@ -139,6 +141,10 @@ def find_spells(db_path: str, criteria: SpellCriteria = None) -> List[Spell]:
         conn.commit()
 
     return spells
+
+
+def _apply_limit(limit: Optional[int]) -> str:
+    return f"limit {limit}" if limit else ""
 
 
 def db_info(db_path: str) -> Dict[str, Dict[str, int]]:

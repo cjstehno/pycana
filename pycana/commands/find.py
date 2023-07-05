@@ -58,7 +58,6 @@ def find(
 
     # FIXME: would be nice to be able to specify cols shown (or show limited set)
     # FIXME: sorting
-    # FIXME: why do options appear as args in help?
     # FIXME: commands should use a default location for database if not specified100
     # FIXME: would be nice to be able to export filtered results as something?
 
@@ -91,12 +90,10 @@ def find(
     if guild and len(guild) > 0:
         criteria.guild = guild.lower() in ["true", "yes", "y"]
 
-    spells = find_spells(db_file, criteria)  # FIXME: limit shoudl be in query
+    spells = find_spells(db_file, criteria, limit)
     if len(spells) == 0:
         console.print("No spells found matching your criteria.", style="yellow b i")
         return
-    if limit:
-        spells = spells[0 : int(limit)]
 
     _display_results(console, spells)
 
