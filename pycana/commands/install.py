@@ -10,19 +10,22 @@ from pycana.services.xml_loader import load_all_spells
 
 @click.command()
 @click.option(
-    '-d', '--source-directory',
-    prompt='What directory are the source files in? ',
-    help='The directory containing the source files to be installed.'
+    "-d",
+    "--source-directory",
+    prompt="What directory are the source files in? ",
+    help="The directory containing the source files to be installed.",
 )
 @click.option(
-    '-f', '--db-file',
-    prompt='What file should be used for the database? ',
-    help='The file to be used for the database.'
+    "-f",
+    "--db-file",
+    prompt="What file should be used for the database? ",
+    help="The file to be used for the database.",
 )
 @click.option(
-    '-v', '--verbose',
+    "-v",
+    "--verbose",
     is_flag=True,
-    help='Enables more extensive logging messages.',
+    help="Enables more extensive logging messages.",
     default=False,
 )
 def install(source_directory: str, db_file: str, verbose: bool) -> None:
@@ -35,7 +38,7 @@ def install(source_directory: str, db_file: str, verbose: bool) -> None:
         verbose: whether extra logging information should be presented
     """
     console = Console()
-    console.print(f"Installing spells from {source_directory} into {db_file}...", style='blue')
+    console.print(f"Installing spells from {source_directory} into {db_file}...", style="blue")
 
     create_db(db_file)
     clear_db(db_file)
@@ -50,4 +53,4 @@ def install(source_directory: str, db_file: str, verbose: bool) -> None:
         verbose=verbose,
     )
 
-    console.print("Done.", style='green b')
+    console.print("Done.", style="green b")

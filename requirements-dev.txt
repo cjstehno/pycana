@@ -7,3 +7,4 @@ coverage
 setuptools
 wheel
 pylint
+black

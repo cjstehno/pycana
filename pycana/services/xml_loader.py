@@ -31,15 +31,15 @@ def load_all_spells(console: Console, spells_dir: str, verbose: bool = False) ->
     overall_start_time = time.time()
 
     all_spells = []
-    for file in filter(lambda f: f.endswith('.xml.gz'), os.listdir(spells_dir)):
+    for file in filter(lambda f: f.endswith(".xml.gz"), os.listdir(spells_dir)):
         all_spells += load_spells(console, str(Path(spells_dir, file)), verbose=verbose)
 
-    overall_elapsed = format(time.time() - overall_start_time, '.2f')
+    overall_elapsed = format(time.time() - overall_start_time, ".2f")
 
     if verbose:
         console.print(
             f"\u2606\u2606 Done loading {len(all_spells)} spells ({overall_elapsed} s) \u2606\u2606.",
-            style='blue b',
+            style="blue b",
         )
 
     return all_spells
@@ -62,13 +62,13 @@ def load_spells(
     """
 
     if verbose:
-        console.print(f"Loading {xml_file}...", style='yellow')
+        console.print(f"Loading {xml_file}...", style="yellow")
 
     if zipped:
-        with gzip.open(xml_file, 'rb') as f:
+        with gzip.open(xml_file, "rb") as f:
             return _read_xml(console, xml_file, f, verbose)
     else:
-        with open(xml_file, 'r', encoding='utf-8') as f:
+        with open(xml_file, "r", encoding="utf-8") as f:
             return _read_xml(console, xml_file, f, verbose)
 
 
@@ -80,15 +80,15 @@ def _read_xml(console: Console, source: str, file, verbose: bool) -> List[Spell]
     root = tree.getroot()
 
     spell_count = 0
-    for child in root.iter('spell'):
-        spells.append(_parse_spell(root.get('name'), child))
+    for child in root.iter("spell"):
+        spells.append(_parse_spell(root.get("name"), child))
         spell_count += 1
 
     if verbose:
-        file_elapsed_time = format(time.time() - file_start_time, '.2f')
+        file_elapsed_time = format(time.time() - file_start_time, ".2f")
         console.print(
             f" \u221f Loaded {spell_count} spells from {source} ({file_elapsed_time} s).",
-            style='green i',
+            style="green i",
         )
 
     return spells
@@ -104,30 +104,30 @@ def _parse_spell(book: str, elt: Element) -> Spell:
     """
     spell = Spell(
         book=book,
-        name=elt.find('name').text,
-        level=int(elt.get('level')),
-        school=School.from_str(elt.get('school')),
-        ritual=elt.get('ritual').lower() == 'true',
-        guild=elt.get('guild').lower() == 'true',
-        category=elt.find('category').text,
-        range=elt.find('range').text,
-        duration=elt.find('duration').text,
+        name=elt.find("name").text,
+        level=int(elt.get("level")),
+        school=School.from_str(elt.get("school")),
+        ritual=elt.get("ritual").lower() == "true",
+        guild=elt.get("guild").lower() == "true",
+        category=elt.find("category").text,
+        range=elt.find("range").text,
+        duration=elt.find("duration").text,
         casting_time=elt.find("casting-time").text,
-        description=elt.find('description').text,
+        description=elt.find("description").text,
         casters=[],
-        components=[]
+        components=[],
     )
 
     spell.casters = []
-    for caster in elt.find('casters').iter():
-        if caster.tag.lower() != 'casters':
+    for caster in elt.find("casters").iter():
+        if caster.tag.lower() != "casters":
             spell.casters.append(Caster.from_str(caster.tag))
 
     spell.components = []
-    for component in elt.find('components').iter():
-        if component.tag.lower() == 'components':
+    for component in elt.find("components").iter():
+        if component.tag.lower() == "components":
             continue
-        if component.tag.lower() == 'material':
+        if component.tag.lower() == "material":
             spell.components.append({"type": "material", "details": component.text})
         else:
             spell.components.append({"type": component.tag})

@@ -7,9 +7,23 @@ from pycana.models import Spell, School, Caster, SpellCriteria
 from pycana.services.database import db_info, load_db, find_spells
 
 _A_SPELL_NAMES: Final[List[str]] = [
-    'Acid Splash', 'Aid', 'Alarm', 'Alter Self', 'Animal Friendship', 'Animal Messenger',
-    'Animal Shapes', 'Animate Dead', 'Animate Objects', 'Antilife Shell', 'Antimagic Field',
-    'Antipathy or Sympathy', 'Arcane Eye', 'Arcane Lock', 'Astral Projection', 'Augury', 'Awaken'
+    "Acid Splash",
+    "Aid",
+    "Alarm",
+    "Alter Self",
+    "Animal Friendship",
+    "Animal Messenger",
+    "Animal Shapes",
+    "Animate Dead",
+    "Animate Objects",
+    "Antilife Shell",
+    "Antimagic Field",
+    "Antipathy or Sympathy",
+    "Arcane Eye",
+    "Arcane Lock",
+    "Astral Projection",
+    "Augury",
+    "Awaken",
 ]
 
 
@@ -17,19 +31,19 @@ def test_db_info(spells_db: str, spells_from: Callable[[str], List[Spell]]) -> N
     load_db(
         Console(),
         spells_db,
-        spells_from('spells_a.xml') + spells_from('spells_b.xml') + spells_from('spells_c.xml'),
+        spells_from("spells_a.xml") + spells_from("spells_b.xml") + spells_from("spells_c.xml"),
         verbose=False,
     )
 
     info = db_info(spells_db)
 
-    assert info['total'] == 64
-    assert info['books'] == {
-        'OGL A': 17,
-        'OGL B': 13,
-        'OGL C': 34,
+    assert info["total"] == 64
+    assert info["books"] == {
+        "OGL A": 17,
+        "OGL B": 13,
+        "OGL C": 34,
     }
-    assert info['levels'] == {
+    assert info["levels"] == {
         0: 2,
         1: 11,
         2: 10,
@@ -41,7 +55,7 @@ def test_db_info(spells_db: str, spells_from: Callable[[str], List[Spell]]) -> N
         8: 5,
         9: 1,
     }
-    assert info['schools'] == {
+    assert info["schools"] == {
         School.ABJURATION.name: 8,
         School.CONJURATION.name: 10,
         School.DIVINATION.name: 7,
@@ -51,7 +65,7 @@ def test_db_info(spells_db: str, spells_from: Callable[[str], List[Spell]]) -> N
         School.NECROMANCY.name: 10,
         School.TRANSMUTATION.name: 9,
     }
-    assert info['casters'] == {
+    assert info["casters"] == {
         Caster.BARD.name: 14,
         Caster.CLERIC.name: 24,
         Caster.DRUID.name: 22,
@@ -67,53 +81,54 @@ def test_find_spells_mapper(spells_db: str, spells_from: Callable[[str], List[Sp
     load_db(
         Console(),
         spells_db,
-        spells_from('spells_a.xml'),
+        spells_from("spells_a.xml"),
         verbose=False,
     )
 
     found_spells = find_spells(spells_db)
 
     assert found_spells[0] == Spell(
-        book='OGL A',
-        name='Acid Splash',
+        book="OGL A",
+        name="Acid Splash",
         level=0,
         school=School.CONJURATION,
         ritual=False,
         guild=True,
         category=None,
-        range='60 feet',
-        duration='Instantaneous',
-        casting_time='1 action',
-        description='You hurl a bubble of acid.\n'
-                    '\n'
-                    'Choose one creature within range, or choose two creatures '
-                    'within range that are within 5 feet of each other. A target '
-                    'must succeed on a Dexterity saving throw or take 1d6 acid '
-                    'damage.\n'
-                    '\n'
-                    '**At higher level.** This spell’s damage increases by 1d6 '
-                    'when you reach 5th level (2d6), 11th level (3d6), and 17th '
-                    'level (4d6).',
+        range="60 feet",
+        duration="Instantaneous",
+        casting_time="1 action",
+        description="You hurl a bubble of acid.\n"
+        "\n"
+        "Choose one creature within range, or choose two creatures "
+        "within range that are within 5 feet of each other. A target "
+        "must succeed on a Dexterity saving throw or take 1d6 acid "
+        "damage.\n"
+        "\n"
+        "**At higher level.** This spell’s damage increases by 1d6 "
+        "when you reach 5th level (2d6), 11th level (3d6), and 17th "
+        "level (4d6).",
         casters=[Caster.SORCERER, Caster.WIZARD],
-        components=[{'type': 'verbal'}, {'type': 'somatic'}]
+        components=[{"type": "verbal"}, {"type": "somatic"}],
     )
 
 
 @pytest.mark.parametrize(
-    'criteria, expected_results', [
+    "criteria, expected_results",
+    [
         (None, _A_SPELL_NAMES),
         (SpellCriteria(), _A_SPELL_NAMES),
-        (SpellCriteria(name='animal'), ['Animal Friendship', 'Animal Messenger', 'Animal Shapes']),
-        (SpellCriteria(name='ANIMAL'), ['Animal Friendship', 'Animal Messenger', 'Animal Shapes']),
-        (SpellCriteria(name='gerbil'), []),
-        (SpellCriteria(name='animal', level='(1, 2)'), ['Animal Friendship', 'Animal Messenger']),
-        (SpellCriteria(name='animal', level='2'), ['Animal Messenger']),
-        (SpellCriteria(book='ogl A', range="('30', '60')", caster='cleric'), ['Aid']),
-        (SpellCriteria(duration='instantaneous', casting_time='action'), ['Acid Splash']),
-        (SpellCriteria(school='necromancy'), ['Animate Dead', 'Astral Projection']),
-        (SpellCriteria(ritual=True), ['Alarm', 'Animal Messenger', 'Augury']),
-        (SpellCriteria(general='dead'), ['Animate Dead', 'Antilife Shell'])
-    ]
+        (SpellCriteria(name="animal"), ["Animal Friendship", "Animal Messenger", "Animal Shapes"]),
+        (SpellCriteria(name="ANIMAL"), ["Animal Friendship", "Animal Messenger", "Animal Shapes"]),
+        (SpellCriteria(name="gerbil"), []),
+        (SpellCriteria(name="animal", level="(1, 2)"), ["Animal Friendship", "Animal Messenger"]),
+        (SpellCriteria(name="animal", level="2"), ["Animal Messenger"]),
+        (SpellCriteria(book="ogl A", range="('30', '60')", caster="cleric"), ["Aid"]),
+        (SpellCriteria(duration="instantaneous", casting_time="action"), ["Acid Splash"]),
+        (SpellCriteria(school="necromancy"), ["Animate Dead", "Astral Projection"]),
+        (SpellCriteria(ritual=True), ["Alarm", "Animal Messenger", "Augury"]),
+        (SpellCriteria(general="dead"), ["Animate Dead", "Antilife Shell"]),
+    ],
 )
 def test_find_spells(
     spells_db: str,
@@ -121,7 +136,7 @@ def test_find_spells(
     criteria: SpellCriteria,
     expected_results: List[str],
 ) -> None:
-    available_spells = spells_from('spells_a.xml')
+    available_spells = spells_from("spells_a.xml")
     load_db(Console(), spells_db, available_spells, verbose=False)
 
     found_spells = find_spells(spells_db, criteria)

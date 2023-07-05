@@ -22,6 +22,9 @@ test:
 lint:
 	python -m pylint pycana
 
+format:
+	python -m black -l 120 pycana tests
+
 dist: clean test lint
 	rm -rf dist/*
 	python -m build --no-isolation

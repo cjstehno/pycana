@@ -22,7 +22,7 @@ def spells_db(tmp_path) -> str:
 
     Returns: A string that should be used as the database path for other commands.
     """
-    db_path = Path(tmp_path, 'test.db')
+    db_path = Path(tmp_path, "test.db")
     create_db(str(db_path))
     yield db_path
     clear_db(str(db_path))
@@ -36,9 +36,10 @@ def spells_from() -> Callable[[str], List[Spell]]:
 
     Returns: A function accepting the name of a spell XML file.
     """
+
     # FIXME: be nice to accept a varargs type thing
     def _here(name: str):
-        pth = str(Path(__file__).parent.joinpath('resources', name))
+        pth = str(Path(__file__).parent.joinpath("resources", name))
         return load_spells(Console(), pth, verbose=False, zipped=False)
 
     return _here

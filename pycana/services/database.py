@@ -9,7 +9,9 @@ from rich.console import Console
 from pycana.models import Spell, SpellCriteria, Caster
 
 # noinspection SqlNoDataSourceInspection
-_CREATE_SQL: Final[str] = '''
+_CREATE_SQL: Final[
+    str
+] = """
     CREATE TABLE IF NOT EXISTS spells (
         book TEXT not null,
         name TEXT not null, 
@@ -26,10 +28,12 @@ _CREATE_SQL: Final[str] = '''
         components TEXT NOT NULL,
         PRIMARY KEY (book, name)
     )
-    '''
+    """
 
 # noinspection SqlNoDataSourceInspection
-_SAVE_SQL: Final[str] = '''
+_SAVE_SQL: Final[
+    str
+] = """
     INSERT INTO spells
         (
             book, name, level, school, ritual, guild, category, range, duration, 
@@ -37,30 +41,30 @@ _SAVE_SQL: Final[str] = '''
         )
     VALUES 
         (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-'''
+"""
 
 # noinspection SqlNoDataSourceInspection
-_CLEAR_SQL: Final[str] = 'DELETE FROM spells'
+_CLEAR_SQL: Final[str] = "DELETE FROM spells"
 
 # noinspection SqlNoDataSourceInspection
-_FIND_SQL = '''
+_FIND_SQL = """
     SELECT
         book, name, level, school, ritual, guild, category, range, duration, casting_time, 
         description, casters, components
     FROM spells
-'''
+"""
 
 # noinspection SqlNoDataSourceInspection
-_INFO_TOTAL: Final[str] = 'select count(*) from spells'
+_INFO_TOTAL: Final[str] = "select count(*) from spells"
 
 # noinspection SqlNoDataSourceInspection
-_INFO_BOOKS: Final[str] = 'SELECT book, count(*) from spells group by book'
+_INFO_BOOKS: Final[str] = "SELECT book, count(*) from spells group by book"
 
 # noinspection SqlNoDataSourceInspection
-_INFO_LEVELS: Final[str] = 'select level,count(*) from spells group by level'
+_INFO_LEVELS: Final[str] = "select level,count(*) from spells group by level"
 
 # noinspection SqlNoDataSourceInspection
-_INFO_SCHOOLS: Final[str] = 'select school, count(*) from spells group by school'
+_INFO_SCHOOLS: Final[str] = "select school, count(*) from spells group by school"
 
 # noinspection SqlNoDataSourceInspection
 _INFO_CASTERS: Final[str] = "select count(*) from spells where lower(casters) like"
@@ -78,7 +82,7 @@ def load_db(console: Console, db_path: str, spells: List[Spell], verbose: bool =
     stored_count = 0
 
     if verbose:
-        console.print(f"Loading {len(spells)} spells...", style='yellow')
+        console.print(f"Loading {len(spells)} spells...", style="yellow")
 
     with sqlite3.connect(db_path) as conn:
         cursor = conn.cursor()
@@ -87,7 +91,7 @@ def load_db(console: Console, db_path: str, spells: List[Spell], verbose: bool =
             cursor.execute(_SAVE_SQL, spell.to_row())
 
             if verbose:
-                console.print(f"\u2714 Stored: {spell}", style='green i')
+                console.print(f"\u2714 Stored: {spell}", style="green i")
 
             stored_count += 1
 
@@ -95,7 +99,7 @@ def load_db(console: Console, db_path: str, spells: List[Spell], verbose: bool =
         conn.commit()
 
         if verbose:
-            console.print(f"Stored all {stored_count} spells.", style='blue b')
+            console.print(f"Stored all {stored_count} spells.", style="blue b")
 
 
 def clear_db(db_path: str) -> None:
@@ -145,25 +149,25 @@ def db_info(db_path: str) -> Dict[str, Dict[str, int]]:
     :return: a dictionary containing the statistical information (counts by type)
     """
     info: Dict[str, Dict[str, int]] = {
-        'total': _query(db_path, _INFO_TOTAL)[0][0],
-        'books': {},
-        'levels': {},
-        'schools': {},
-        'casters': {}
+        "total": _query(db_path, _INFO_TOTAL)[0][0],
+        "books": {},
+        "levels": {},
+        "schools": {},
+        "casters": {},
     }
 
     for book in _query(db_path, _INFO_BOOKS):
-        info['books'][book[0]] = book[1]
+        info["books"][book[0]] = book[1]
 
     for level in _query(db_path, _INFO_LEVELS):
-        info['levels'][level[0]] = level[1]
+        info["levels"][level[0]] = level[1]
 
     for school in _query(db_path, _INFO_SCHOOLS):
-        info['schools'][school[0]] = school[1]
+        info["schools"][school[0]] = school[1]
 
     for caster in Caster.__members__.values():
         for casters in _query(db_path, f"{_INFO_CASTERS} '%{caster.name.lower()}%'"):
-            info['casters'][caster.name] = casters[0]
+            info["casters"][caster.name] = casters[0]
 
     return info
 

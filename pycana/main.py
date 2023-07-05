@@ -16,5 +16,5 @@ main.add_command(clean.clean)
 main.add_command(find.find)
 main.add_command(info.info)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
