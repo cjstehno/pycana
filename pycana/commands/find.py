@@ -11,16 +11,11 @@ from rich.table import Table
 from rich.text import Text
 
 from pycana.models import SpellCriteria, Spell
-from pycana.services.database import find_spells
+from pycana.services.database import find_spells, resolve_db_path
 
 
 @click.command()
-@click.option(
-    "-f",
-    "--db-file",
-    prompt="What file should be used for the database? ",
-    help="The file to be used for the database.",
-)
+@click.option("-f", "--db-file", default=None, help="The file to be used for the database.")
 @click.option("-b", "--book", default=None, help='Filters the results for "book" containing the given string.')
 @click.option("-n", "--name", default=None, help='Filters the results for "name" containing the given string.')
 @click.option("--category", default=None, help='Filters the results for "category" containing the given string.')
@@ -43,6 +38,12 @@ from pycana.services.database import find_spells
     default=None,
     help="Sorts the results by the specified field (book, name, level, category, or school). May be asc or desc.",
 )
+@click.option(
+    "--selection/--no-selection",
+    default=True,
+    help="Shows or hides the single spell selection option and just renders the table.",
+)
+# pylint: disable=too-many-locals
 def find(
     db_file: str,
     book: str,
@@ -56,15 +57,19 @@ def find(
     limit: int,
     general: str,
     sort_by: str,
+    selection: bool,
 ) -> None:
     """
     Finds spells filtered by the provided criteria from the specified database.
     """
     console = Console()
+    db_file = resolve_db_path(db_file)
 
-    # FIXME: would be nice to be able to specify cols shown (or show limited set)
-    # FIXME: commands should use a default location for database if not specified
-    # FIXME: would be nice to be able to export filtered results as something?
+    # FIXME: allow selection of shown/hidden cols
+    #   --show-cols: name, name
+    #   --hide-cols: name, name
+    # book, name, level, school, ritual, guild, category, range, duration, casting_time, casters, components,
+    # description
 
     criteria = SpellCriteria()
 
@@ -102,9 +107,10 @@ def find(
 
     _display_results(console, spells)
 
-    selected = console.input(f"Which one would you like to view (1-{len(spells)}; 0 to quit)? ").strip()
-    if selected != "0":
-        _display_single(console, spells[(int(selected) - 1)])
+    if selection:
+        selected = console.input(f"Which one would you like to view (1-{len(spells)}; 0 to quit)? ").strip()
+        if selected != "0":
+            _display_single(console, spells[(int(selected) - 1)])
 
 
 def _display_casters(casters) -> str:

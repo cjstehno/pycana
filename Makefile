@@ -1,4 +1,4 @@
-.PHONY: clean virtualenv test dist
+.PHONY: clean dist
 
 clean:
 	find . -name '*.py[co]' -delete
@@ -25,6 +25,8 @@ lint:
 format:
 	python -m black -l 120 pycana tests
 
-dist: clean test lint
+check: format lint test
+
+dist: clean check
 	rm -rf dist/*
 	python -m build --no-isolation

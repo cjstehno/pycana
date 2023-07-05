@@ -1,7 +1,9 @@
 """
 Functions providing access to the database.
 """
+import os
 import sqlite3
+from pathlib import Path
 from typing import Final, Dict, List, Any
 
 from rich.console import Console
@@ -68,6 +70,28 @@ _INFO_SCHOOLS: Final[str] = "select school, count(*) from spells group by school
 
 # noinspection SqlNoDataSourceInspection
 _INFO_CASTERS: Final[str] = "select count(*) from spells where lower(casters) like"
+
+
+def resolve_db_path(specified_path: str) -> str:
+    """
+    If the specified_path is `None` the value equivalent to `~/.pycana/pycana.db` will be returned (and the `.pycana`
+    directory will be created, if not already present).
+
+    Args:
+        specified_path: the specified path to the database file, or `None`.
+
+    Returns: The resolved database path to be used.
+    """
+    if specified_path:
+        return specified_path
+    else:
+        home_dir = os.path.expanduser("~")
+        pycana_dir = Path(home_dir, ".pycana")
+
+        if not pycana_dir.exists():
+            os.mkdir(pycana_dir)
+
+        return str(Path(pycana_dir, "pycana.db"))
 
 
 def create_db(db_path: str) -> None:
@@ -149,11 +173,11 @@ def find_spells(
 
 
 def _apply_order(order_by: str = None) -> str:
-    return f'order by {order_by}' if order_by else ''
+    return f"order by {order_by}" if order_by else ""
 
 
 def _apply_where(criteria: SpellCriteria = None) -> str:
-    return criteria.where() if criteria and not criteria.empty() else ''
+    return criteria.where() if criteria and not criteria.empty() else ""
 
 
 def _apply_limit(limit: int = None) -> str:

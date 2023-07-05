@@ -4,7 +4,7 @@ Command used to install spells in a database.
 import click
 from rich.console import Console
 
-from pycana.services.database import create_db, load_db, clear_db
+from pycana.services.database import create_db, load_db, clear_db, resolve_db_path
 from pycana.services.xml_loader import load_all_spells
 
 
@@ -15,12 +15,7 @@ from pycana.services.xml_loader import load_all_spells
     prompt="What directory are the source files in? ",
     help="The directory containing the source files to be installed.",
 )
-@click.option(
-    "-f",
-    "--db-file",
-    prompt="What file should be used for the database? ",
-    help="The file to be used for the database.",
-)
+@click.option("-f", "--db-file", default=None, help="The file to be used for the database.")
 @click.option(
     "-v",
     "--verbose",
@@ -34,10 +29,12 @@ def install(source_directory: str, db_file: str, verbose: bool) -> None:
 
     Args:
         source_directory: the source directory (containing .xml.gz files)
-        db_file: the database file path
+        db_file: the database file path (or None)
         verbose: whether extra logging information should be presented
     """
     console = Console()
+
+    db_file = resolve_db_path(db_file)
     console.print(f"Installing spells from {source_directory} into {db_file}...", style="blue")
 
     create_db(db_file)

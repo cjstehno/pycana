@@ -7,25 +7,24 @@ import click
 from rich.console import Console
 from rich.table import Table
 
-from pycana.services.database import db_info
+from pycana.services.database import db_info, resolve_db_path
+
+# FIXME: add ability to show only one of the tables (show: book, school, caster, level, total)
 
 
 @click.command()
-@click.option(
-    "-f",
-    "--db-file",
-    prompt="What file should be used for the database? ",
-    help="The file to be used for the database.",
-)
+@click.option("-f", "--db-file", default=None, help="The file to be used for the database.")
 def info(db_file: str) -> None:
     """
     Generates a report of the database contents with statistics about the spells
     currently contained within it.
 
     Args:
-        db_file: the path to the database file
+        db_file: the path to the database file (or None)
     """
     console = Console()
+    db_file = resolve_db_path(db_file)
+
     info_results = db_info(db_file)
 
     console.print(f"There are {info_results['total']} spells in the database.\n")
