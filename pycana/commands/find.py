@@ -1,15 +1,17 @@
 """
 Command used to find spells in the database by criteria.
 """
-import click
 import html
+from typing import List
+
+import click
 from rich.console import Console
 from rich.markdown import Markdown
 from rich.table import Table
 from rich.text import Text
 
+from pycana.models import SpellCriteria, Spell
 from pycana.services.database import find_spells
-from pycana.models import SpellCriteria
 
 
 @click.command()
@@ -70,8 +72,11 @@ def find(
         db_file: the database file path
         book: optional book criteria
         name: optional name criteria
+        category: optional category criteria
         level: optional level criteria
         ritual: optional ritual criteria
+        caster: optional caster criteria
+        limit: optional limit for the number of rows returned
     """
     console = Console()
 
@@ -80,6 +85,7 @@ def find(
     # FIXME: add fields: shcool, guild, global
     # FIXME: why do options appear as args in help?
     # FIXME: commands should use a default location for database if not specified100
+    # FIXME: would be nice to be able to export filtered results as something?
 
     criteria = SpellCriteria()
 
@@ -101,66 +107,20 @@ def find(
     if ritual and len(ritual) > 0:
         criteria.ritual = ritual.lower() in ['true', 'yes', 'y']
 
-    spells = find_spells(db_file, criteria) # FIXME: limit shoudl be in query
-
-    if limit:
-        spells = spells[0:int(limit)]
-
+    spells = find_spells(db_file, criteria)  # FIXME: limit shoudl be in query
     if len(spells) == 0:
         console.print("No spells found matching your criteria.", style='yellow b i')
         return
+    if limit:
+        spells = spells[0:int(limit)]
 
-    table = Table(highlight=True)
+    _display_results(console, spells)
 
-    table.add_column("N", style='blue b')
-    table.add_column("Book", no_wrap=True)
-    table.add_column("Name", no_wrap=True)
-    table.add_column("Lvl")
-    table.add_column("School")
-    table.add_column("Category")
-    table.add_column("Ritual")
-    table.add_column("Guild")
-    table.add_column("Casters")
-    table.add_column("Components")
-
-    for idx, spell in enumerate(spells):
-        casters = _display_casters(spell.casters)
-        components = _display_components(spell.components)
-        table.add_row(
-            str(idx+1),
-            html.unescape(spell.book),
-            html.unescape(spell.name),
-            str(spell.level),
-            str(spell.school),
-            spell.category if spell.category else '-',
-            'Y' if spell.ritual else 'N',
-            'Y' if spell.guild else 'N',
-            casters, components,
-        )
-
-    console.print(table)
-
-    selected = console.input(f"Which one would you like to view (1-{len(spells)}; 0 to quit)? ")
-    if selected.strip() != '0':
-        spell = spells[(int(selected) - 1)]
-
-        console.print(f"\n{html.unescape(spell.name)}", style='red b')
-        console.print(
-            f"level {spell.level} {spell.school}{' (ritual)' if spell.ritual else ''}",
-            style='white b i'
-        )
-        if spell.category and len(spell.category) > 0:
-            console.print(f"Category: {spell.category}")
-
-        _output_field(console, 'Book', html.unescape(spell.book))
-        _output_field(console, 'Range', spell.range)
-        _output_field(console, 'Duration', spell.duration)
-        _output_field(console, 'Casting Time', spell.casting_time)
-        _output_field(console, 'Components', _display_components(spell.components, details=True))
-        _output_field(console, 'Casters', _display_casters(spell.casters))
-
-        console.print()
-        console.print(Markdown(spell.description))
+    selected = console.input(
+        f"Which one would you like to view (1-{len(spells)}; 0 to quit)? "
+    ).strip()
+    if selected != '0':
+        _display_single(console, spells[(int(selected) - 1)])
 
 
 def _display_casters(casters) -> str:
@@ -179,3 +139,54 @@ def _display_components(components, details: bool = False) -> str:
 
 def _output_field(console: Console, field_name: str, field_value: str) -> None:
     console.print(Text.assemble((f'{field_name}: ', 'white b'), field_value))
+
+
+def _display_results(console: Console, spells: List[Spell]) -> None:
+    table = Table(highlight=True)
+    table.add_column("N", style='blue b')
+    table.add_column("Book", no_wrap=True)
+    table.add_column("Name", no_wrap=True)
+    table.add_column("Lvl")
+    table.add_column("School")
+    table.add_column("Category")
+    table.add_column("Ritual")
+    table.add_column("Guild")
+    table.add_column("Casters")
+    table.add_column("Components")
+
+    for idx, spell in enumerate(spells):
+        casters = _display_casters(spell.casters)
+        components = _display_components(spell.components)
+        table.add_row(
+            str(idx + 1),
+            html.unescape(spell.book),
+            html.unescape(spell.name),
+            str(spell.level),
+            str(spell.school),
+            spell.category if spell.category else '-',
+            'Y' if spell.ritual else 'N',
+            'Y' if spell.guild else 'N',
+            casters, components,
+        )
+
+    console.print(table)
+
+
+def _display_single(console: Console, spell: Spell) -> None:
+    console.print(f"\n{html.unescape(spell.name)}", style='red b')
+    console.print(
+        f"level {spell.level} {spell.school}{' (ritual)' if spell.ritual else ''}",
+        style='white b i'
+    )
+    if spell.category and len(spell.category) > 0:
+        console.print(f"Category: {spell.category}")
+
+    _output_field(console, 'Book', html.unescape(spell.book))
+    _output_field(console, 'Range', spell.range)
+    _output_field(console, 'Duration', spell.duration)
+    _output_field(console, 'Casting Time', spell.casting_time)
+    _output_field(console, 'Components', _display_components(spell.components, details=True))
+    _output_field(console, 'Casters', _display_casters(spell.casters))
+
+    console.print()
+    console.print(Markdown(spell.description))

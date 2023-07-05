@@ -1,3 +1,6 @@
+"""
+The main entry point for the pycana command line application.
+"""
 import click
 
 from .commands import install, clean, find, info

@@ -19,6 +19,9 @@ test:
 		--cov-report=html:coverage-report \
 		tests/
 
-dist: clean
+lint:
+	python -m pylint pycana
+
+dist: clean test lint
 	rm -rf dist/*
 	python -m build --no-isolation
