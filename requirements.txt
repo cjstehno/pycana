@@ -1,6 +1,2 @@
 click
 rich
-pytest
-pytest-coverage
-pylint
-tox
