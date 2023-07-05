@@ -2,7 +2,7 @@
 Functions providing access to the database.
 """
 import sqlite3
-from typing import Final, Dict, List, Any, Optional
+from typing import Final, Dict, List, Any
 
 from rich.console import Console
 
@@ -126,13 +126,18 @@ def clear_db(db_path: str) -> None:
 # should also support global='foo' which will find all with any field containing
 
 
-def find_spells(db_path: str, criteria: SpellCriteria = None, limit: int = None) -> List[Spell]:
+def find_spells(
+    db_path: str,
+    criteria: SpellCriteria = None,
+    limit: int = None,
+    sort_by: str = None,
+) -> List[Spell]:
     spells = []
 
     with sqlite3.connect(db_path) as conn:
         cursor = conn.cursor()
         cursor.execute(
-            f"{_FIND_SQL} {criteria.where() if criteria and not criteria.empty() else ''} {_apply_limit(limit)}",
+            f"{_FIND_SQL} {_apply_where(criteria)} {_apply_order(sort_by)} {_apply_limit(limit)}",
         )
         results = cursor.fetchall()
         for row in results:
@@ -143,7 +148,15 @@ def find_spells(db_path: str, criteria: SpellCriteria = None, limit: int = None)
     return spells
 
 
-def _apply_limit(limit: Optional[int]) -> str:
+def _apply_order(order_by: str = None) -> str:
+    return f'order by {order_by}' if order_by else ''
+
+
+def _apply_where(criteria: SpellCriteria = None) -> str:
+    return criteria.where() if criteria and not criteria.empty() else ''
+
+
+def _apply_limit(limit: int = None) -> str:
     return f"limit {limit}" if limit else ""
 
 

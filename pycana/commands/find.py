@@ -38,6 +38,11 @@ from pycana.services.database import find_spells
     default=None,
     help="Filers the results for multiple fields containing the given string.",
 )
+@click.option(
+    "--sort-by",
+    default=None,
+    help="Sorts the results by the specified field (book, name, level, category, or school). May be asc or desc.",
+)
 def find(
     db_file: str,
     book: str,
@@ -50,6 +55,7 @@ def find(
     school: str,
     limit: int,
     general: str,
+    sort_by: str,
 ) -> None:
     """
     Finds spells filtered by the provided criteria from the specified database.
@@ -57,8 +63,7 @@ def find(
     console = Console()
 
     # FIXME: would be nice to be able to specify cols shown (or show limited set)
-    # FIXME: sorting
-    # FIXME: commands should use a default location for database if not specified100
+    # FIXME: commands should use a default location for database if not specified
     # FIXME: would be nice to be able to export filtered results as something?
 
     criteria = SpellCriteria()
@@ -90,7 +95,7 @@ def find(
     if guild and len(guild) > 0:
         criteria.guild = guild.lower() in ["true", "yes", "y"]
 
-    spells = find_spells(db_file, criteria, limit)
+    spells = find_spells(db_file, criteria, limit, sort_by)
     if len(spells) == 0:
         console.print("No spells found matching your criteria.", style="yellow b i")
         return
