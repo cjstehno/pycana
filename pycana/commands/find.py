@@ -2,7 +2,7 @@
 Command used to find spells in the database by criteria.
 """
 import html
-from typing import List
+from typing import List, Final, Callable, Any, Dict
 
 import click
 from rich.console import Console
@@ -12,6 +12,26 @@ from rich.text import Text
 
 from pycana.models import SpellCriteria, Spell
 from pycana.services.database import find_spells, resolve_db_path
+
+
+_COLUMNS: Final[Dict[str, Callable[[Any], str]]] = {
+    "book": lambda sp: html.unescape(sp.book),
+    "name": lambda sp: html.unescape(sp.name),
+    "level": lambda sp: str(sp.level),
+    "school": lambda sp: str(sp.school),
+    "category": lambda sp: sp.category if sp.category else "-",
+    "ritual": lambda sp: "Y" if sp.ritual else "N",
+    "guild": lambda sp: "Y" if sp.guild else "N",
+    "range": lambda sp: sp.range,
+    "duration": lambda sp: sp.duration,
+    "casting_time": lambda sp: sp.casting_time,
+    "description": lambda sp: Markdown(sp.description),
+    "casters": lambda sp: _display_casters(sp.casters),
+    "components": lambda sp: _display_components(sp.components),
+}
+
+# FIXME: maybe make default cols a configured thing ~/.pycana/pycana.cfg ?
+# FIXME: add ability to search range, casting_time, duration, and description individually
 
 
 @click.command()
@@ -43,6 +63,18 @@ from pycana.services.database import find_spells, resolve_db_path
     default=True,
     help="Shows or hides the single spell selection option and just renders the table.",
 )
+@click.option(
+    "--show-cols",
+    default=None,
+    help="Specifies the columns that are to be shown (book, name, level, school, ritual, guild, category, range, "
+    "duration, casting_time, casters, components, or description)",
+)
+@click.option(
+    "--hide-cols",
+    default=None,
+    help="Specifies the columns that are to be hidden (book, name, level, school, ritual, guild, category, range, "
+    "duration, casting_time, casters, components, or description)",
+)
 # pylint: disable=too-many-locals
 def find(
     db_file: str,
@@ -58,18 +90,14 @@ def find(
     general: str,
     sort_by: str,
     selection: bool,
+    show_cols: str,
+    hide_cols: str,
 ) -> None:
     """
     Finds spells filtered by the provided criteria from the specified database.
     """
     console = Console()
     db_file = resolve_db_path(db_file)
-
-    # FIXME: allow selection of shown/hidden cols
-    #   --show-cols: name, name
-    #   --hide-cols: name, name
-    # book, name, level, school, ritual, guild, category, range, duration, casting_time, casters, components,
-    # description
 
     criteria = SpellCriteria()
 
@@ -105,12 +133,25 @@ def find(
         console.print("No spells found matching your criteria.", style="yellow b i")
         return
 
-    _display_results(console, spells)
+    _display_results(console, spells, _resolve_visible_cols(show_cols, hide_cols))
 
     if selection:
         selected = console.input(f"Which one would you like to view (1-{len(spells)}; 0 to quit)? ").strip()
         if selected != "0":
             _display_single(console, spells[(int(selected) - 1)])
+
+
+def _resolve_visible_cols(shown_cols: str, hidden_cols: str) -> List[str]:
+    visible_cols = ["book", "name", "level", "school", "category", "ritual", "guild", "casters", "components"]
+
+    if shown_cols:
+        visible_cols = list(map(lambda x: x.strip(), shown_cols.split(",")))
+
+    if hidden_cols:
+        hidden_cols = list(map(lambda x: x.strip(), hidden_cols.split(",")))
+        visible_cols = [i for i in visible_cols if i not in hidden_cols]
+
+    return visible_cols
 
 
 def _display_casters(casters) -> str:
@@ -131,34 +172,19 @@ def _output_field(console: Console, field_name: str, field_value: str) -> None:
     console.print(Text.assemble((f"{field_name}: ", "white b"), field_value))
 
 
-def _display_results(console: Console, spells: List[Spell]) -> None:
+def _display_results(console: Console, spells: List[Spell], visible_cols: List[str]) -> None:
     table = Table(highlight=True)
     table.add_column("N", style="blue b")
-    table.add_column("Book", no_wrap=True)
-    table.add_column("Name", no_wrap=True)
-    table.add_column("Lvl")
-    table.add_column("School")
-    table.add_column("Category")
-    table.add_column("Ritual")
-    table.add_column("Guild")
-    table.add_column("Casters")
-    table.add_column("Components")
+
+    for vis_col in visible_cols:
+        table.add_column(vis_col.capitalize())
 
     for idx, spell in enumerate(spells):
-        casters = _display_casters(spell.casters)
-        components = _display_components(spell.components)
-        table.add_row(
-            str(idx + 1),
-            html.unescape(spell.book),
-            html.unescape(spell.name),
-            str(spell.level),
-            str(spell.school),
-            spell.category if spell.category else "-",
-            "Y" if spell.ritual else "N",
-            "Y" if spell.guild else "N",
-            casters,
-            components,
-        )
+        cols = [str(idx + 1)]
+        for vis_col in visible_cols:
+            cols.append(_COLUMNS[vis_col](spell))
+
+        table.add_row(*cols)
 
     console.print(table)
 
