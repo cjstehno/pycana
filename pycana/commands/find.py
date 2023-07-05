@@ -13,7 +13,6 @@ from rich.text import Text
 from pycana.models import SpellCriteria, Spell
 from pycana.services.database import find_spells, resolve_db_path
 
-
 _COLUMNS: Final[Dict[str, Callable[[Any], str]]] = {
     "book": lambda sp: html.unescape(sp.book),
     "name": lambda sp: html.unescape(sp.name),
@@ -29,6 +28,7 @@ _COLUMNS: Final[Dict[str, Callable[[Any], str]]] = {
     "casters": lambda sp: _display_casters(sp.casters),
     "components": lambda sp: _display_components(sp.components),
 }
+
 
 # FIXME: maybe make default cols a configured thing ~/.pycana/pycana.cfg ?
 # FIXME: add ability to search range, casting_time, duration, and description individually
@@ -97,8 +97,37 @@ def find(
     Finds spells filtered by the provided criteria from the specified database.
     """
     console = Console()
-    db_file = resolve_db_path(db_file)
 
+    spells = find_spells(
+        resolve_db_path(db_file),
+        _build_criteria(book, name, category, level, ritual, guild, caster, school, general),
+        limit,
+        sort_by,
+    )
+
+    if len(spells) == 0:
+        console.print("No spells found matching your criteria.", style="yellow b i")
+        return
+
+    _display_results(console, spells, _resolve_visible_cols(show_cols, hide_cols))
+
+    if selection:
+        selected = console.input(f"Which one would you like to view (1-{len(spells)}; 0 to quit)? ").strip()
+        if selected != "0":
+            _display_single(console, spells[(int(selected) - 1)])
+
+
+def _build_criteria(
+    book: str,
+    name: str,
+    category: str,
+    level: str,
+    ritual: str,
+    guild: str,
+    caster: str,
+    school: str,
+    general: str,
+) -> SpellCriteria:
     criteria = SpellCriteria()
 
     if general and len(general) > 0:
@@ -128,17 +157,7 @@ def find(
     if guild and len(guild) > 0:
         criteria.guild = guild.lower() in ["true", "yes", "y"]
 
-    spells = find_spells(db_file, criteria, limit, sort_by)
-    if len(spells) == 0:
-        console.print("No spells found matching your criteria.", style="yellow b i")
-        return
-
-    _display_results(console, spells, _resolve_visible_cols(show_cols, hide_cols))
-
-    if selection:
-        selected = console.input(f"Which one would you like to view (1-{len(spells)}; 0 to quit)? ").strip()
-        if selected != "0":
-            _display_single(console, spells[(int(selected) - 1)])
+    return criteria
 
 
 def _resolve_visible_cols(shown_cols: str, hidden_cols: str) -> List[str]:
