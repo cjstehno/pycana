@@ -6,7 +6,7 @@ import click
 from .commands import install, clean, find, info
 
 
-@click.group(help="... a CLI tool...")
+@click.group(help="A tool for searching through a spell database.")
 def main():
     pass
 

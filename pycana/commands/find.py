@@ -26,9 +26,17 @@ from pycana.services.database import find_spells
 @click.option("--category", default=None, help='Filters the results for "category" containing the given string.')
 @click.option("-l", "--level", default=None, help='Filters the results for "level" matching the criteria.')
 @click.option("-r", "--ritual", default=None, help='Filters the results for "ritual" containing the given string.')
+@click.option("--guild", default=None, help='Filters the results for "guild" containing the given string.')
 @click.option("-c", "--caster", default=None, help='Filers the results for "caster" containing the given string.')
+@click.option("-s", "--school", default=None, help='Filers the results for "school" containing the given string.')
 @click.option(
     "--limit", default=None, help="Limits the results to the specified number of rows (unlimited by default)."
+)
+@click.option(
+    "-g",
+    "--general",
+    default=None,
+    help="Filers the results for multiple fields containing the given string.",
 )
 def find(
     db_file: str,
@@ -37,32 +45,27 @@ def find(
     category: str,
     level: str,
     ritual: str,
+    guild: str,
     caster: str,
+    school: str,
     limit: int,
+    general: str,
 ) -> None:
     """
-    Finds spells by criteria from the specified database.
-
-    Args:
-        db_file: the database file path
-        book: optional book criteria
-        name: optional name criteria
-        category: optional category criteria
-        level: optional level criteria
-        ritual: optional ritual criteria
-        caster: optional caster criteria
-        limit: optional limit for the number of rows returned
+    Finds spells filtered by the provided criteria from the specified database.
     """
     console = Console()
 
     # FIXME: would be nice to be able to specify cols shown (or show limited set)
     # FIXME: sorting
-    # FIXME: add fields: shcool, guild, global
     # FIXME: why do options appear as args in help?
     # FIXME: commands should use a default location for database if not specified100
     # FIXME: would be nice to be able to export filtered results as something?
 
     criteria = SpellCriteria()
+
+    if general and len(general) > 0:
+        criteria.general = general
 
     if book and len(book) > 0:
         criteria.book = html.unescape(book)
@@ -76,11 +79,17 @@ def find(
     if caster and len(caster) > 0:
         criteria.caster = caster
 
+    if school and len(school) > 0:
+        criteria.school = school
+
     if level and len(level) > 0:
         criteria.level = level
 
     if ritual and len(ritual) > 0:
         criteria.ritual = ritual.lower() in ["true", "yes", "y"]
+
+    if guild and len(guild) > 0:
+        criteria.guild = guild.lower() in ["true", "yes", "y"]
 
     spells = find_spells(db_file, criteria)  # FIXME: limit shoudl be in query
     if len(spells) == 0:
