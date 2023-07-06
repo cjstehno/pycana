@@ -16,9 +16,9 @@ def test_install(tmp_path):
     result = runner.invoke(
         install,
         [
-            "-d",
+            "--source-directory",
             str(source_dir),
-            "-f",
+            "--db-file",
             db_file,
             "--name-filter",
             ".xml",

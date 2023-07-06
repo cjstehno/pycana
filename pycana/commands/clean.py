@@ -8,7 +8,7 @@ from pycana.services.database import clear_db, resolve_db_path
 
 
 @click.command()
-@click.option("-f", "--db-file", default=None, help="The file to be used for the database.")
+@click.option("--db-file", default=None, help="The file to be used for the database.")
 def clean(db_file: str) -> None:
     """
     Cleans the database contents, but does not delete the file.

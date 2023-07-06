@@ -10,20 +10,13 @@ from pycana.services.xml_loader import load_all_spells
 
 @click.command()
 @click.option(
-    "-d",
     "--source-directory",
     prompt="What directory are the source files in? ",
     help="The directory containing the source files to be installed.",
 )
-@click.option("-f", "--db-file", default=None, help="The file to be used for the database.")
+@click.option("--db-file", default=None, help="The file to be used for the database.")
 @click.option("--name-filter", default=None, help="Suffix filter used to restrict the files loaded.")
-@click.option(
-    "-v",
-    "--verbose",
-    is_flag=True,
-    help="Enables more extensive logging messages.",
-    default=False,
-)
+@click.option("--verbose", is_flag=True, help="Enables more extensive logging messages.", default=False)
 def install(source_directory: str, db_file: str, name_filter: str, verbose: bool) -> None:
     """
     Installs the spells from the specified source directory into the given database file.

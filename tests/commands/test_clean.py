@@ -19,7 +19,7 @@ def test_clean(
     assert info["meta"]["total"] == 17
 
     runner = CliRunner()
-    result = runner.invoke(clean, ["-f", spells_db])
+    result = runner.invoke(clean, ["--db-file", spells_db])
 
     assert result.exit_code == 0
 

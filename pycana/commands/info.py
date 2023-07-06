@@ -14,7 +14,7 @@ from pycana.services.database import db_info, resolve_db_path
 
 
 @click.command()
-@click.option("-f", "--db-file", default=None, help="The file to be used for the database.")
+@click.option("--db-file", default=None, help="The file to be used for the database.")
 def info(db_file: str) -> None:
     """
     Generates a report of the database contents with statistics about the spells

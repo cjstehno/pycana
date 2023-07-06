@@ -21,7 +21,7 @@ def test_find(
     result = runner.invoke(
         find,
         [
-            "-f",
+            "--db-file",
             spells_db,
             "--no-selection",
             "--school",

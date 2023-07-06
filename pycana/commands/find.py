@@ -36,20 +36,19 @@ _COLUMNS: Final[Dict[str, Callable[[Any], Optional[Union[ConsoleRenderable, Rich
 
 
 @click.command()
-@click.option("-f", "--db-file", default=None, help="The file to be used for the database.")
-@click.option("-b", "--book", default=None, help='Filters the results for "book" containing the given string.')
-@click.option("-n", "--name", default=None, help='Filters the results for "name" containing the given string.')
+@click.option("--db-file", default=None, help="The file to be used for the database.")
+@click.option("--book", default=None, help='Filters the results for "book" containing the given string.')
+@click.option("--name", default=None, help='Filters the results for "name" containing the given string.')
 @click.option("--category", default=None, help='Filters the results for "category" containing the given string.')
-@click.option("-l", "--level", default=None, help='Filters the results for "level" matching the criteria.')
-@click.option("-r", "--ritual", default=None, help='Filters the results for "ritual" containing the given string.')
+@click.option("--level", default=None, help='Filters the results for "level" matching the criteria.')
+@click.option("--ritual", default=None, help='Filters the results for "ritual" containing the given string.')
 @click.option("--guild", default=None, help='Filters the results for "guild" containing the given string.')
-@click.option("-c", "--caster", default=None, help='Filers the results for "caster" containing the given string.')
-@click.option("-s", "--school", default=None, help='Filers the results for "school" containing the given string.')
+@click.option("--caster", default=None, help='Filers the results for "caster" containing the given string.')
+@click.option("--school", default=None, help='Filers the results for "school" containing the given string.')
 @click.option(
     "--limit", default=None, help="Limits the results to the specified number of rows (unlimited by default)."
 )
 @click.option(
-    "-g",
     "--general",
     default=None,
     help="Filers the results for multiple fields containing the given string.",

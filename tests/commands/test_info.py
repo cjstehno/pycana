@@ -10,7 +10,7 @@ from pycana.services.database import load_db
 
 def test_info_without_spells(spells_db: str) -> None:
     runner = CliRunner()
-    result = runner.invoke(info, ["-f", spells_db])
+    result = runner.invoke(info, ["--db-file", spells_db])
 
     assert result.exit_code == 0
     assert result.output.strip() == "There are 0 spells in the database."
@@ -24,7 +24,7 @@ def test_info_with_spells(
     load_db(Console(), spells_db, spells)
 
     runner = CliRunner()
-    result = runner.invoke(info, ["-f", spells_db])
+    result = runner.invoke(info, ["--db-file", spells_db])
 
     assert result.exit_code == 0
     assert result.output.splitlines(False)[0] == f"There are {len(spells)} spells in the database."
