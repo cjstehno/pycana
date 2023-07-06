@@ -24,15 +24,10 @@ _COLUMNS: Final[Dict[str, Callable[[Any], Optional[Union[ConsoleRenderable, Rich
     "range": lambda sp: sp.range,
     "duration": lambda sp: sp.duration,
     "casting_time": lambda sp: sp.casting_time,
-    "description": lambda sp: Markdown(sp.description),
+    "description": lambda sp: Markdown(sp.description[0:150] + "..."),
     "casters": lambda sp: _display_casters(sp.casters),
     "components": lambda sp: _display_components(sp.components),
 }
-
-
-# FIXME: maybe make default cols a configured thing ~/.pycana/pycana.cfg ?
-# FIXME: add --add-cols option to add colums to current list
-# FIXME: add ability to search range, casting_time, duration, and description individually
 
 
 @click.command()
@@ -45,6 +40,10 @@ _COLUMNS: Final[Dict[str, Callable[[Any], Optional[Union[ConsoleRenderable, Rich
 @click.option("--guild", default=None, help='Filters the results for "guild" containing the given string.')
 @click.option("--caster", default=None, help='Filers the results for "caster" containing the given string.')
 @click.option("--school", default=None, help='Filers the results for "school" containing the given string.')
+@click.option("--range", default=None, help='Filters the results for "range" containing the given string.')
+@click.option("--duration", default=None, help='Filters the results for "duration" containing the given string.')
+@click.option("--casting-time", default=None, help='Filters the results for "casting time" containing the given value.')
+@click.option("--description", default=None, help='Filters the results for "description" containing the given string.')
 @click.option(
     "--limit", default=None, help="Limits the results to the specified number of rows (unlimited by default)."
 )
@@ -75,6 +74,7 @@ _COLUMNS: Final[Dict[str, Callable[[Any], Optional[Union[ConsoleRenderable, Rich
     help="Specifies the columns that are to be hidden (book, name, level, school, ritual, guild, category, range, "
     "duration, casting_time, casters, components, or description)",
 )
+@click.option("--add-cols", default=None, help="Adds the specified columns to the display.")
 # pylint: disable=too-many-locals
 def find(
     db_file: str,
@@ -86,12 +86,17 @@ def find(
     guild: str,
     caster: str,
     school: str,
+    range: str,  # pylint: disable=redefined-builtin
+    duration: str,
+    casting_time: str,
+    description: str,
     limit: int,
     general: str,
     sort_by: str,
     selection: bool,
     show_cols: str,
     hide_cols: str,
+    add_cols: str,
 ) -> None:
     """
     Finds spells filtered by the provided criteria from the specified database.
@@ -100,7 +105,21 @@ def find(
 
     spells = find_spells(
         resolve_db_path(db_file),
-        _build_criteria(book, name, category, level, ritual, guild, caster, school, general),
+        _build_criteria(
+            book,
+            name,
+            category,
+            level,
+            ritual,
+            guild,
+            caster,
+            school,
+            range,
+            duration,
+            casting_time,
+            description,
+            general,
+        ),
         limit,
         sort_by,
     )
@@ -109,7 +128,7 @@ def find(
         console.print("No spells found matching your criteria.", style="yellow b i")
         return
 
-    _display_results(console, spells, _resolve_visible_cols(show_cols, hide_cols))
+    _display_results(console, spells, _resolve_visible_cols(show_cols, hide_cols, add_cols))
 
     if selection:
         selected = console.input(f"Which one would you like to view (1-{len(spells)}; 0 to quit)? ").strip()
@@ -126,53 +145,61 @@ def _build_criteria(
     guild: str,
     caster: str,
     school: str,
+    spell_range: str,
+    duration: str,
+    casting_time: str,
+    description: str,
     general: str,
 ) -> SpellCriteria:
     criteria = SpellCriteria()
 
-    if general and len(general) > 0:
-        criteria.general = general
-
-    if book and len(book) > 0:
-        criteria.book = html.unescape(book)
-
-    if name and len(name) > 0:
-        criteria.name = html.unescape(name)
-
-    if category and len(category) > 0:
-        criteria.category = category
-
-    if caster and len(caster) > 0:
-        criteria.caster = caster
-
-    if school and len(school) > 0:
-        criteria.school = school
-
-    if level and len(level) > 0:
-        criteria.level = level
-
-    if ritual and len(ritual) > 0:
-        criteria.ritual = ritual.lower() in ["true", "yes", "y"]
-
-    if guild and len(guild) > 0:
-        criteria.guild = guild.lower() in ["true", "yes", "y"]
+    _apply_criteria(criteria, "general", general)
+    _apply_criteria(criteria, "book", book, escaped=True)
+    _apply_criteria(criteria, "name", name, escaped=True)
+    _apply_criteria(criteria, "category", category)
+    _apply_criteria(criteria, "range", spell_range)
+    _apply_criteria(criteria, "duration", duration)
+    _apply_criteria(criteria, "description", description)
+    _apply_criteria(criteria, "casting_time", casting_time)
+    _apply_criteria(criteria, "caster", caster)
+    _apply_criteria(criteria, "school", school)
+    _apply_criteria(criteria, "level", level)
+    _apply_bool_criteria(criteria, "ritual", ritual)
+    _apply_bool_criteria(criteria, "guild", guild)
 
     return criteria
 
 
-def _resolve_visible_cols(shown_cols: str, hidden_cols: str) -> List[str]:
+def _apply_criteria(criteria: SpellCriteria, name: str, value: Optional[str], escaped: Optional[bool] = False) -> None:
+    if value is not None and len(value) > 0:
+        setattr(criteria, name, value if not escaped else html.unescape(value))
+
+
+def _apply_bool_criteria(criteria: SpellCriteria, name: str, value: Optional[str]) -> None:
+    if value is not None and len(value) > 0:
+        setattr(criteria, name, value.lower() in ["true", "yes", "y"])
+
+
+def _resolve_visible_cols(shown_cols: str, hidden_cols: str, add_cols: str) -> List[str]:
     # FIXME: call configuration:load(location)['default_columns']
-    # FIXME: add ability to add a column to the default list
     visible_cols = ["book", "name", "level", "school", "category", "ritual", "guild", "casters", "components"]
 
-    if shown_cols:
-        visible_cols = list(map(lambda x: x.strip(), shown_cols.split(",")))
+    if shown_cols is not None:
+        visible_cols = _extract_cols(shown_cols)
 
-    if hidden_cols:
-        hidden_cols_list = list(map(lambda x: x.strip(), hidden_cols.split(",")))
+    if hidden_cols is not None:
+        hidden_cols_list = _extract_cols(hidden_cols)
         visible_cols = [i for i in visible_cols if i not in hidden_cols_list]
 
+    if add_cols is not None:
+        for col in _extract_cols(add_cols):
+            visible_cols.append(col)
+
     return visible_cols
+
+
+def _extract_cols(col_list: str) -> List[str]:
+    return list(map(lambda x: x.strip(), col_list.split(",")))
 
 
 def _display_casters(casters) -> str:
