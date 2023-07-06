@@ -1,17 +1,11 @@
 from typing import Callable, List
 
-# noinspection PyUnresolvedReferences
-# pylint: disable=unused-import
-import pytest
 from click.testing import CliRunner
 from rich.console import Console
 
 from pycana.commands.info import info
 from pycana.models import Spell
 from pycana.services.database import load_db
-
-# noinspection PyUnresolvedReferences
-from tests.conftest import spells_db, spells_from
 
 
 def test_info_without_spells(spells_db: str) -> None:
