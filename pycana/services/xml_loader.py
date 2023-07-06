@@ -8,15 +8,12 @@ import os
 import time
 import xml.etree.ElementTree as ET
 from pathlib import Path
-from typing import List, cast
+from typing import List, cast, Optional
 from xml.etree.ElementTree import Element
 
 from rich.console import Console
 
 from pycana.models import Spell, School, Caster
-
-
-# SOON: testingv
 
 
 def load_all_spells(console: Console, spells_dir: str, verbose: bool = False) -> List[Spell]:
@@ -48,18 +45,20 @@ def load_all_spells(console: Console, spells_dir: str, verbose: bool = False) ->
 def load_spells(
     console: Console,
     xml_file: str,
-    verbose: bool = False,
-    zipped: bool = True,
+    verbose: Optional[bool] = False,
 ) -> List[Spell]:
     """
-    Loads all the spells contained in the given spell book file (*.xml.gz).
+    Loads all the spells contained in the given spell book file (.xml.gz if zipped, otherwise .xml).
 
-    :param console the shared console instance for output printing
-    :param xml_file: the gzipped xml file path
-    :param verbose: used to enable more detailed messages to the console
-    :param zipped: used to denote whether the file is zipped or not
-    :return:
+    Args:
+        console: the output console
+        xml_file: the xml file to be read (.xml.gz or .xml)
+        verbose: optional verbose flag - when True, it will write more information to the console
+
+    Returns: a list of spells parsed from the file.
     """
+
+    zipped = xml_file.endswith(".xml.gz")
 
     if verbose:
         console.print(f"Loading {xml_file}...", style="yellow")

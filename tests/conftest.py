@@ -40,6 +40,6 @@ def spells_from() -> Callable[[str], List[Spell]]:
     # FIXME: be nice to accept a varargs type thing
     def _here(name: str):
         pth = str(Path(__file__).parent.joinpath("resources", name))
-        return load_spells(Console(), pth, verbose=False, zipped=False)
+        return load_spells(Console(), pth, verbose=False)
 
     return _here

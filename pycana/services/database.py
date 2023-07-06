@@ -72,25 +72,27 @@ _INFO_SCHOOLS: Final[str] = "select school, count(*) from spells group by school
 _INFO_CASTERS: Final[str] = "select count(*) from spells where lower(casters) like"
 
 
-def resolve_db_path(specified_path: str) -> str:
+def resolve_db_path(specified_path: Optional[str], fallback_directory: Optional[str] = os.path.expanduser("~")) -> str:
     """
-    If the specified_path is `None` the value equivalent to `~/.pycana/pycana.db` will be returned (and the `.pycana`
-    directory will be created, if not already present).
+    Used to resolve the path to the database file.
+
+    If the `specified_path` is present, it will be used - it should be the whole path to the database file.
+
+    If the `specified_path` is not present, the `fallback_directory` value will be used to create a
+    `./.pycana/pycana.db` file path, from that root - the `pycana.db` file will not be created here,
+    but the `.pycana` parent directory will be.
 
     Args:
         specified_path: the specified path to the database file, or `None`.
+        fallback_directory: the directory to be used as the base of the path if the `specified_path` is `None`.
 
-    Returns: The resolved database path to be used.
+    Returns: The resolved database path (including file) to be used by the database.
     """
-    if specified_path:
+    if specified_path is not None:
         return specified_path
     else:
-        home_dir = os.path.expanduser("~")
-        pycana_dir = Path(home_dir, ".pycana")
-
-        if not pycana_dir.exists():
-            os.mkdir(pycana_dir)
-
+        pycana_dir = Path(fallback_directory, ".pycana")
+        pycana_dir.mkdir(parents=True, exist_ok=True)
         return str(Path(pycana_dir, "pycana.db"))
 
 

@@ -1,10 +1,11 @@
+from pathlib import Path
 from typing import List, Callable, Final
 
 import pytest
 from rich.console import Console
 
 from pycana.models import Spell, School, Caster, SpellCriteria
-from pycana.services.database import db_info, load_db, find_spells
+from pycana.services.database import db_info, load_db, find_spells, resolve_db_path
 
 _A_SPELL_NAMES: Final[List[str]] = [
     "Acid Splash",
@@ -25,6 +26,18 @@ _A_SPELL_NAMES: Final[List[str]] = [
     "Augury",
     "Awaken",
 ]
+
+
+def test_resolve_db_path_with_specified(tmp_path) -> None:
+    specified = str(Path(tmp_path, 'specified/some.db'))
+    resolved_path = resolve_db_path(specified, str(Path(tmp_path, 'fallback')))
+    assert resolved_path == specified
+
+
+def test_resolve_db_path_with_fallback(tmp_path) -> None:
+    fallback = str(Path(tmp_path, 'fallback'))
+    resolved_path = resolve_db_path(None, fallback)
+    assert resolved_path == str(Path(fallback, ".pycana", "pycana.db"))
 
 
 def test_db_info(spells_db: str, spells_from: Callable[[str], List[Spell]]) -> None:
