@@ -16,19 +16,29 @@ from rich.console import Console
 from pycana.models import Spell, School, Caster
 
 
-def load_all_spells(console: Console, spells_dir: str, verbose: bool = False) -> List[Spell]:
+def load_all_spells(
+    console: Console,
+    spells_dir: str,
+    name_filter: Optional[str] = ".xml.gz",
+    verbose: Optional[bool] = False,
+) -> List[Spell]:
     """
-    Loads all spells contained in the spell book files (*.xml.gz) contained in the given directory
-    (not recursive).
+    Loads all spells contained in the spell book files (.xml or .xml.gz) contained in the given directory (not
+    recursive). If a `name_filter` is provided, it will be used to match the file names as an "ends-with" check.
 
-    :param console the shared console instance for output printing
-    :param spells_dir: the directory containing the spell book files
-    :return: the list of loaded Spell objects
+    Args:
+        console: the output console to be used
+        spells_dir: the path to the directory containing the spell book files
+        name_filter: an optional (ends-with) name filter (.xml.gz will be used by default)
+        verbose: an optional flag that will generate more detailed console output
+
+    Returns: a list of spells from all of the loaded books.
     """
     overall_start_time = time.time()
+    used_filter: str = name_filter if name_filter is not None else ".xml.gz"
 
     all_spells = []
-    for file in filter(lambda f: f.endswith(".xml.gz"), os.listdir(spells_dir)):
+    for file in filter(lambda f: f.endswith(used_filter), os.listdir(spells_dir)):
         all_spells += load_spells(console, str(Path(spells_dir, file)), verbose=verbose)
 
     overall_elapsed = format(time.time() - overall_start_time, ".2f")

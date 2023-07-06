@@ -5,7 +5,7 @@ import pytest
 from rich.console import Console
 
 from pycana.models import School, Caster
-from pycana.services.xml_loader import load_spells
+from pycana.services.xml_loader import load_spells, load_all_spells
 
 
 # FIXME: test
@@ -62,3 +62,30 @@ def test_load_spells(file_name: str, verbose: bool, monkeypatch) -> None:
 
     else:
         assert len(output) == 0
+
+
+@pytest.mark.parametrize(
+    "name_filter, expected_count, verbose, output_count",
+    [
+        (".xml.gz", 17, True, 3),
+        (".xml", 302, True, 9),
+        (".xml.gz", 17, False, 0),
+        (".xml", 302, False, 0),
+    ],
+)
+def test_load_all_spells(name_filter, expected_count, verbose, output_count, monkeypatch) -> None:
+    output: List[str] = []
+
+    def _fake_print(*args, **_):
+        output.append(args[0])
+
+    console = Console()
+
+    # stub out the print method, so we can collect call values
+    monkeypatch.setattr(console, "print", _fake_print)
+
+    file_dir = str(Path(__file__).parent.parent.joinpath("resources"))
+    spells = load_all_spells(console, file_dir, name_filter=name_filter, verbose=verbose)
+
+    assert len(spells) == expected_count
+    assert len(output) == output_count
