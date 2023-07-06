@@ -29,13 +29,13 @@ _A_SPELL_NAMES: Final[List[str]] = [
 
 
 def test_resolve_db_path_with_specified(tmp_path) -> None:
-    specified = str(Path(tmp_path, 'specified/some.db'))
-    resolved_path = resolve_db_path(specified, str(Path(tmp_path, 'fallback')))
+    specified = str(Path(tmp_path, "specified/some.db"))
+    resolved_path = resolve_db_path(specified, str(Path(tmp_path, "fallback")))
     assert resolved_path == specified
 
 
 def test_resolve_db_path_with_fallback(tmp_path) -> None:
-    fallback = str(Path(tmp_path, 'fallback'))
+    fallback = str(Path(tmp_path, "fallback"))
     resolved_path = resolve_db_path(None, fallback)
     assert resolved_path == str(Path(fallback, ".pycana", "pycana.db"))
 

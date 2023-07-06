@@ -90,6 +90,8 @@ def resolve_db_path(specified_path: Optional[str], fallback_directory: Optional[
     """
     if specified_path is not None:
         return specified_path
+    elif fallback_directory is None:
+        raise ValueError("The fallback_directory must have a value, or be omitted.")
     else:
         pycana_dir = Path(fallback_directory, ".pycana")
         pycana_dir.mkdir(parents=True, exist_ok=True)

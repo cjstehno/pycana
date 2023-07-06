@@ -71,7 +71,7 @@ def load_spells(
             return _read_xml(console, xml_file, f, verbose)
 
 
-def _read_xml(console: Console, source: str, file, verbose: bool) -> List[Spell]:
+def _read_xml(console: Console, source: str, file, verbose: Optional[bool]) -> List[Spell]:
     spells = []
 
     file_start_time = time.time()
