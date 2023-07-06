@@ -8,7 +8,7 @@ import os
 import time
 import xml.etree.ElementTree as ET
 from pathlib import Path
-from typing import List
+from typing import List, cast
 from xml.etree.ElementTree import Element
 
 from rich.console import Console
@@ -81,8 +81,9 @@ def _read_xml(console: Console, source: str, file, verbose: bool) -> List[Spell]
 
     spell_count = 0
     for child in root.iter("spell"):
-        spells.append(_parse_spell(root.get("name"), child))
-        spell_count += 1
+        if root.get("name") is not None:
+            spells.append(_parse_spell(str(root.get("name")), child))
+            spell_count += 1
 
     if verbose:
         file_elapsed_time = format(time.time() - file_start_time, ".2f")
@@ -94,6 +95,22 @@ def _read_xml(console: Console, source: str, file, verbose: bool) -> List[Spell]
     return spells
 
 
+def _find_elt_text(elt: Element, name: str, required: bool = True) -> str:
+    if elt.find(name) is not None and elt.find(name).text is not None:  # type: ignore[union-attr]
+        return str(cast(Element, elt.find(name)).text)
+    elif required:
+        raise ValueError(f"Element ({name}) has no value!")
+    else:
+        return ""
+
+
+def _required_attr(elt: Element, name: str) -> str:
+    if elt.get(name) is not None:
+        return elt.get(name)  # type: ignore[return-value]
+    else:
+        raise ValueError(f"Element ({elt.tag}) has no attribute ({name})!")
+
+
 def _parse_spell(book: str, elt: Element) -> Spell:
     """
     Extracts a Spell object from the provided XML element data, and the given book name.
@@ -103,32 +120,32 @@ def _parse_spell(book: str, elt: Element) -> Spell:
     :return: the loaded spell instance
     """
     spell = Spell(
-        book=book,
-        name=elt.find("name").text,
-        level=int(elt.get("level")),
-        school=School.from_str(elt.get("school")),
-        ritual=elt.get("ritual").lower() == "true",
-        guild=elt.get("guild").lower() == "true",
-        category=elt.find("category").text,
-        range=elt.find("range").text,
-        duration=elt.find("duration").text,
-        casting_time=elt.find("casting-time").text,
-        description=elt.find("description").text,
+        book=book if book else "Loose Spells",
+        name=_find_elt_text(elt, "name"),
+        level=int(_required_attr(elt, "level")),
+        school=School.from_str(_required_attr(elt, "school")),
+        ritual=_required_attr(elt, "ritual").lower() == "true",
+        guild=_required_attr(elt, "guild").lower() == "true",
+        category=_find_elt_text(elt, "category", required=False),
+        range=_find_elt_text(elt, "range"),
+        duration=_find_elt_text(elt, "duration"),
+        casting_time=_find_elt_text(elt, "casting-time"),
+        description=_find_elt_text(elt, "description"),
         casters=[],
         components=[],
     )
 
     spell.casters = []
-    for caster in elt.find("casters").iter():
+    for caster in cast(Element, elt.find("casters")).iter():
         if caster.tag.lower() != "casters":
             spell.casters.append(Caster.from_str(caster.tag))
 
     spell.components = []
-    for component in elt.find("components").iter():
+    for component in cast(Element, elt.find("components")).iter():
         if component.tag.lower() == "components":
             continue
         if component.tag.lower() == "material":
-            spell.components.append({"type": "material", "details": component.text})
+            spell.components.append({"type": "material", "details": component.text if component.text else ""})
         else:
             spell.components.append({"type": component.tag})
 

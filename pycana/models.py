@@ -129,7 +129,7 @@ class SpellCriteria:
     general: Optional[str] = None
 
     def where(self) -> str:
-        clauses = []
+        clauses: List[str] = []
 
         if self.empty():
             return ""
@@ -151,8 +151,8 @@ class SpellCriteria:
         return f"WHERE {' AND '.join(clauses)}" if len(clauses) > 0 else ""
 
     @staticmethod
-    def _apply_general_clause(clauses: List[str], value: str) -> None:
-        general_clauses = []
+    def _apply_general_clause(clauses: List[str], value: Optional[str]) -> None:
+        general_clauses: List[str] = []
 
         if SpellCriteria._not_empty(value):
             SpellCriteria._apply_clause(general_clauses, "book", value)
@@ -169,9 +169,9 @@ class SpellCriteria:
             clauses.append(" OR ".join(general_clauses))
 
     @staticmethod
-    def _apply_clause(clauses: List[str], name: str, value: str) -> None:
+    def _apply_clause(clauses: List[str], name: str, value: Optional[str]) -> None:
         if SpellCriteria._not_empty(value):
-            if value.startswith("(") and value.endswith(")"):
+            if value and value.startswith("(") and value.endswith(")"):
                 # pylint: disable=eval-used
                 clauses.append(SpellCriteria._or_values(name, eval(value)))
             else:
@@ -183,9 +183,9 @@ class SpellCriteria:
             clauses.append(f"{name} = {1 if value else 0}")
 
     @staticmethod
-    def _apply_int_clause(clauses: List[str], name: str, value: str) -> None:
+    def _apply_int_clause(clauses: List[str], name: str, value: Optional[str]) -> None:
         if SpellCriteria._not_empty(value):
-            if value.startswith("(") and value.endswith(")"):
+            if value and value.startswith("(") and value.endswith(")"):
                 # pylint: disable=eval-used
                 items = map(lambda x: SpellCriteria._value_eq(name, x), eval(value))
                 clauses.append(f"({' OR '.join(items)})")
@@ -193,13 +193,14 @@ class SpellCriteria:
                 clauses.append(SpellCriteria._value_eq(name, value))
 
     @staticmethod
-    def _value_eq(name: str, value: str, quoted: bool = False):
+    def _value_eq(name: str, value: Optional[str], quoted: Optional[bool] = False):
         used_value = f"'{value}'" if quoted else value
         return f"{name} = {used_value}"
 
     @staticmethod
-    def _like_contains(name: str, value: str) -> str:
-        return f"LOWER({name}) like '%{value.lower()}%'"
+    def _like_contains(name: str, value: Optional[str]) -> str:
+        # TODO: better None-handling
+        return f"LOWER({name}) like '%{value.lower() if value else ''}%'"
 
     @staticmethod
     def _or_values(name: str, values: Tuple[str]) -> str:
@@ -225,9 +226,9 @@ class SpellCriteria:
         )
 
     @staticmethod
-    def _empty(value: str) -> bool:
+    def _empty(value: Optional[str]) -> bool:
         return not value or len(value) == 0
 
     @staticmethod
-    def _not_empty(value: str) -> bool:
-        return value and len(value) > 0
+    def _not_empty(value: Optional[str]) -> bool:
+        return value is not None and len(value) > 0

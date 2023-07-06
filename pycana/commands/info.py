@@ -9,6 +9,7 @@ from rich.table import Table
 
 from pycana.services.database import db_info, resolve_db_path
 
+
 # FIXME: add ability to show only one of the tables (show: book, school, caster, level, total)
 
 
@@ -27,10 +28,11 @@ def info(db_file: str) -> None:
 
     info_results = db_info(db_file)
 
-    console.print(f"There are {info_results['total']} spells in the database.\n")
+    total_spell_count = info_results["meta"]["total"]
 
-    # noinspection PyTypeChecker
-    if info_results["total"] > 0:
+    console.print(f"There are {total_spell_count} spells in the database.\n")
+
+    if total_spell_count > 0:
         console.print(_build_table(info_results, "Book", "books"))
         console.print(_build_table(info_results, "School", "schools"))
         console.print(_build_table(info_results, "Caster", "casters"))

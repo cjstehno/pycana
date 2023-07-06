@@ -25,7 +25,10 @@ lint:
 format:
 	python -m black -l 120 pycana tests
 
-check: format lint test
+typing:
+	python -m mypy pycana
+
+check: typing lint format test
 
 dist: clean check
 	rm -rf dist/*

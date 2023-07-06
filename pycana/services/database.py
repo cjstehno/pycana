@@ -4,7 +4,7 @@ Functions providing access to the database.
 import os
 import sqlite3
 from pathlib import Path
-from typing import Final, Dict, List, Any
+from typing import Final, Dict, List, Any, Optional
 
 from rich.console import Console
 
@@ -152,9 +152,9 @@ def clear_db(db_path: str) -> None:
 
 def find_spells(
     db_path: str,
-    criteria: SpellCriteria = None,
-    limit: int = None,
-    sort_by: str = None,
+    criteria: Optional[SpellCriteria] = None,
+    limit: Optional[int] = None,
+    sort_by: Optional[str] = None,
 ) -> List[Spell]:
     spells = []
 
@@ -172,15 +172,15 @@ def find_spells(
     return spells
 
 
-def _apply_order(order_by: str = None) -> str:
+def _apply_order(order_by: Optional[str] = None) -> str:
     return f"order by {order_by}" if order_by else ""
 
 
-def _apply_where(criteria: SpellCriteria = None) -> str:
+def _apply_where(criteria: Optional[SpellCriteria] = None) -> str:
     return criteria.where() if criteria and not criteria.empty() else ""
 
 
-def _apply_limit(limit: int = None) -> str:
+def _apply_limit(limit: Optional[int] = None) -> str:
     return f"limit {limit}" if limit else ""
 
 
@@ -192,7 +192,9 @@ def db_info(db_path: str) -> Dict[str, Dict[str, int]]:
     :return: a dictionary containing the statistical information (counts by type)
     """
     info: Dict[str, Dict[str, int]] = {
-        "total": _query(db_path, _INFO_TOTAL)[0][0],
+        "meta": {
+            "total": _query(db_path, _INFO_TOTAL)[0][0],
+        },
         "books": {},
         "levels": {},
         "schools": {},

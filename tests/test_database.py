@@ -37,7 +37,7 @@ def test_db_info(spells_db: str, spells_from: Callable[[str], List[Spell]]) -> N
 
     info = db_info(spells_db)
 
-    assert info["total"] == 64
+    assert info["meta"]["total"] == 64
     assert info["books"] == {
         "OGL A": 17,
         "OGL B": 13,
@@ -94,7 +94,7 @@ def test_find_spells_mapper(spells_db: str, spells_from: Callable[[str], List[Sp
         school=School.CONJURATION,
         ritual=False,
         guild=True,
-        category=None,
+        category="",
         range="60 feet",
         duration="Instantaneous",
         casting_time="1 action",

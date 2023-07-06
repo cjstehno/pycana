@@ -2,10 +2,10 @@
 Command used to find spells in the database by criteria.
 """
 import html
-from typing import List, Final, Callable, Any, Dict
+from typing import List, Final, Callable, Any, Dict, Optional, Union
 
 import click
-from rich.console import Console
+from rich.console import Console, ConsoleRenderable, RichCast
 from rich.markdown import Markdown
 from rich.table import Table
 from rich.text import Text
@@ -13,7 +13,7 @@ from rich.text import Text
 from pycana.models import SpellCriteria, Spell
 from pycana.services.database import find_spells, resolve_db_path
 
-_COLUMNS: Final[Dict[str, Callable[[Any], str]]] = {
+_COLUMNS: Final[Dict[str, Callable[[Any], Optional[Union[ConsoleRenderable, RichCast, str]]]]] = {
     "book": lambda sp: html.unescape(sp.book),
     "name": lambda sp: html.unescape(sp.name),
     "level": lambda sp: str(sp.level),
@@ -169,8 +169,8 @@ def _resolve_visible_cols(shown_cols: str, hidden_cols: str) -> List[str]:
         visible_cols = list(map(lambda x: x.strip(), shown_cols.split(",")))
 
     if hidden_cols:
-        hidden_cols = list(map(lambda x: x.strip(), hidden_cols.split(",")))
-        visible_cols = [i for i in visible_cols if i not in hidden_cols]
+        hidden_cols_list = list(map(lambda x: x.strip(), hidden_cols.split(",")))
+        visible_cols = [i for i in visible_cols if i not in hidden_cols_list]
 
     return visible_cols
 
@@ -201,9 +201,9 @@ def _display_results(console: Console, spells: List[Spell], visible_cols: List[s
         table.add_column(vis_col.capitalize())
 
     for idx, spell in enumerate(spells):
-        cols = [str(idx + 1)]
+        cols: List[Union[ConsoleRenderable, RichCast, str]] = [str(idx + 1)]
         for vis_col in visible_cols:
-            cols.append(_COLUMNS[vis_col](spell))
+            cols.append(_COLUMNS[vis_col](spell))  # type: ignore[arg-type]
 
         table.add_row(*cols)
 
