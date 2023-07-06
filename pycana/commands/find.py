@@ -31,6 +31,7 @@ _COLUMNS: Final[Dict[str, Callable[[Any], Optional[Union[ConsoleRenderable, Rich
 
 
 # FIXME: maybe make default cols a configured thing ~/.pycana/pycana.cfg ?
+# FIXME: add --add-cols option to add colums to current list
 # FIXME: add ability to search range, casting_time, duration, and description individually
 
 
