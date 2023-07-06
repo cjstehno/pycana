@@ -161,6 +161,8 @@ def _build_criteria(
 
 
 def _resolve_visible_cols(shown_cols: str, hidden_cols: str) -> List[str]:
+    # FIXME: call configuration:load(location)['default_columns']
+    # FIXME: add ability to add a column to the default list
     visible_cols = ["book", "name", "level", "school", "category", "ritual", "guild", "casters", "components"]
 
     if shown_cols:
