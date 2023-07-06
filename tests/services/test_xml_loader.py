@@ -8,12 +8,6 @@ from pycana.models import School, Caster
 from pycana.services.xml_loader import load_spells, load_all_spells
 
 
-# FIXME: test
-# test with zipped files
-# - load_all_spells(verbose=True)
-# - bad data (error handling)
-
-
 @pytest.mark.parametrize(
     "file_name, verbose",
     [

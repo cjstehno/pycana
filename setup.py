@@ -12,8 +12,6 @@ setup(
     url='https://github.io/cjstehno/pycana',
     license='unlicensed',
     packages=find_packages(exclude=['tests*']),
-    # package_data={'todo': ['templates/*']},
-    # include_package_data=True,
     entry_points="""
         [console_scripts]
         pycana = pycana.main:main

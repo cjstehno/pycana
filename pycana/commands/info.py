@@ -1,7 +1,7 @@
 """
 Command used to generate a report of the database contents.
 """
-from typing import Dict
+from typing import Dict, Optional
 
 import click
 from rich.console import Console
@@ -10,18 +10,17 @@ from rich.table import Table
 from pycana.services.database import db_info, resolve_db_path
 
 
-# FIXME: add ability to show only one of the tables (show: book, school, caster, level, total)
-
-
 @click.command()
 @click.option("--db-file", default=None, help="The file to be used for the database.")
-def info(db_file: str) -> None:
+@click.option(
+    "--show-table",
+    type=click.Choice(["total", "book", "school", "caster", "level"], case_sensitive=False),
+    default=None,
+    help="Show only the specified info table in the results.",
+)
+def info(db_file: str, show_table: str) -> None:
     """
-    Generates a report of the database contents with statistics about the spells
-    currently contained within it.
-
-    Args:
-        db_file: the path to the database file (or None)
+    Generates a report of the database contents with statistics about the spells currently contained within it.
     """
     console = Console()
     db_file = resolve_db_path(db_file)
@@ -30,13 +29,19 @@ def info(db_file: str) -> None:
 
     total_spell_count = info_results["meta"]["total"]
 
-    console.print(f"There are {total_spell_count} spells in the database.\n")
+    if show_table is None or show_table.lower() == "total":
+        console.print(f"There are {total_spell_count} spells in the database.\n")
 
     if total_spell_count > 0:
-        console.print(_build_table(info_results, "Book", "books"))
-        console.print(_build_table(info_results, "School", "schools"))
-        console.print(_build_table(info_results, "Caster", "casters"))
-        console.print(_build_table(info_results, "Levels", "levels"))
+        _show(console, info_results, show_table, "book")
+        _show(console, info_results, show_table, "school")
+        _show(console, info_results, show_table, "caster")
+        _show(console, info_results, show_table, "level")
+
+
+def _show(console: Console, results: Dict[str, Dict[str, int]], show_table: Optional[str], table: str) -> None:
+    if show_table is None or show_table.lower() == table:
+        console.print(_build_table(results, table.capitalize(), f"{table}s"))
 
 
 def _build_table(results: Dict[str, Dict[str, int]], label: str, info_group: str) -> Table:

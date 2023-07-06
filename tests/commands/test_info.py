@@ -28,4 +28,3 @@ def test_info_with_spells(
 
     assert result.exit_code == 0
     assert result.output.splitlines(False)[0] == f"There are {len(spells)} spells in the database."
-    # FIXME: assert the generated content tables
