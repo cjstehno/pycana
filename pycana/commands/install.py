@@ -16,7 +16,7 @@ from pycana.services.xml_loader import load_all_spells
     help="The directory containing the source files to be installed.",
 )
 @click.option("-f", "--db-file", default=None, help="The file to be used for the database.")
-@click.option('--name-filter', default=None, help='Suffix filter used to restrict the files loaded.')
+@click.option("--name-filter", default=None, help="Suffix filter used to restrict the files loaded.")
 @click.option(
     "-v",
     "--verbose",

@@ -18,12 +18,18 @@ def test_find(
     load_db(Console(), spells_db, spells)
 
     runner = CliRunner()
-    result = runner.invoke(find, [
-        "-f", spells_db,
-        '--no-selection',
-        '--school', 'divination',
-        '--caster', '("cleric", "warlock")',
-    ])
+    result = runner.invoke(
+        find,
+        [
+            "-f",
+            spells_db,
+            "--no-selection",
+            "--school",
+            "divination",
+            "--caster",
+            '("cleric", "warlock")',
+        ],
+    )
 
     assert result.exit_code == 0
 
