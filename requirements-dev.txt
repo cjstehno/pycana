@@ -3,6 +3,8 @@
 build
 pytest
 pytest-cov
+pytest-sugar
+pytest-html
 coverage
 setuptools
 wheel

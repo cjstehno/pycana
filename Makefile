@@ -13,7 +13,8 @@ virtualenv:
 
 test:
 	python -m pytest \
-		-v \
+		--html=report.html \
+		--self-contained-html \
 		--cov=pycana \
 		--cov-report=term \
 		--cov-report=html:coverage-report \
