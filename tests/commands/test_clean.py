@@ -26,4 +26,4 @@ def test_clean(
     assert db_info(spells_db)["meta"]["total"] == 0
 
     assert result.output.splitlines()[0].startswith("Cleaning the database")
-    assert result.output.splitlines()[3].endswith("Done.")
+    assert result.output.splitlines()[-1].endswith("Done.")

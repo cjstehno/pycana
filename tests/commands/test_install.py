@@ -30,4 +30,4 @@ def test_install(tmp_path):
     assert db_info(db_file)["meta"]["total"] == 302
 
     assert result.output.splitlines()[0].startswith("Installing spells from ")
-    assert result.output.splitlines()[4].endswith("Done.")
+    assert result.output.splitlines()[-1].endswith("Done.")
