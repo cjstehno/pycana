@@ -7,6 +7,7 @@ from rich.console import Console
 from pycana.services.database import create_db, load_db, clear_db, resolve_db_path
 from pycana.services.xml_loader import load_all_spells
 
+# FIXME: add support for text format (spellbook text - .sbk or .sbk.gz)
 
 @click.command()
 @click.option(

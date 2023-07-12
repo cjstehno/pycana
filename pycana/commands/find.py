@@ -2,6 +2,7 @@
 Command used to find spells in the database by criteria.
 """
 import html
+import random
 from typing import List, Final, Callable, Any, Dict, Optional, Union
 
 import click
@@ -30,8 +31,11 @@ _COLUMNS: Final[Dict[str, Callable[[Any], Optional[Union[ConsoleRenderable, Rich
 }
 
 
+# FIXME: add --offset N to offset the starting index (when using --liomit)
+
+
 @click.command()
-@click.option("--db-file", default=None, help="The file to be used for the database.")
+@click.option("--db-file", default=None, help="The file to be used for the database, if not using the default.")
 @click.option("--book", default=None, help='Filters the results for "book" containing the given string.')
 @click.option("--name", default=None, help='Filters the results for "name" containing the given string.')
 @click.option("--category", default=None, help='Filters the results for "category" containing the given string.')
@@ -55,26 +59,13 @@ _COLUMNS: Final[Dict[str, Callable[[Any], Optional[Union[ConsoleRenderable, Rich
 @click.option(
     "--sort-by",
     default=None,
-    help="Sorts the results by the specified field (book, name, level, category, or school). May be asc or desc.",
+    help="Sorts the results by the specified field. Direction ('asc' or 'desc') may specified by adding it to the end.",
 )
-@click.option(
-    "--selection/--no-selection",
-    default=True,
-    help="Shows or hides the single spell selection option and just renders the table.",
-)
-@click.option(
-    "--show-cols",
-    default=None,
-    help="Specifies the columns that are to be shown (book, name, level, school, ritual, guild, category, range, "
-    "duration, casting_time, casters, components, or description)",
-)
-@click.option(
-    "--hide-cols",
-    default=None,
-    help="Specifies the columns that are to be hidden (book, name, level, school, ritual, guild, category, range, "
-    "duration, casting_time, casters, components, or description)",
-)
+@click.option("--no-selection", is_flag=True, help="Hides the spell selection option and just renders the table.")
+@click.option("--show-cols", default=None, help="Specifies the columns that are to be shown.")
+@click.option("--hide-cols", default=None, help="Specifies the columns that are to be hidden.")
 @click.option("--add-cols", default=None, help="Adds the specified columns to the display.")
+@click.option("--random-selection", is_flag=True, help="Randomly selects a spell matching the provided criteria.")
 # pylint: disable=too-many-locals
 def find(
     db_file: str,
@@ -93,32 +84,33 @@ def find(
     limit: int,
     general: str,
     sort_by: str,
-    selection: bool,
+    no_selection: bool,
     show_cols: str,
     hide_cols: str,
     add_cols: str,
+    random_selection: bool,
 ) -> None:
     """
     Finds spells filtered by the provided criteria from the specified database.
+
+    The various criteria parameters may be single- or multi-value, where multiple values are specified as "('one',
+    'two', 'three')". Each of the values is an OR clause.
+
+    Example: `--level 3 --caster "('wizard', 'warlock')"` would find third-level spells that can be cast by a wizard or
+    warlock.
+
+    The values are compared with string "contains" comparisons ignoring case.
+
+    The available columns are: book, name, level, school, ritual, guild, category, range, duration, casting_time,
+    casters, components, and description
     """
     console = Console()
 
     spells = find_spells(
         resolve_db_path(db_file),
         _build_criteria(
-            book,
-            name,
-            category,
-            level,
-            ritual,
-            guild,
-            caster,
-            school,
-            range,
-            duration,
-            casting_time,
-            description,
-            general,
+            book, name, category, level, ritual, guild, caster, school,
+            range, duration, casting_time, description, general,
         ),
         limit,
         sort_by,
@@ -128,12 +120,17 @@ def find(
         console.print("No spells found matching your criteria.", style="yellow b i")
         return
 
-    _display_results(console, spells, _resolve_visible_cols(show_cols, hide_cols, add_cols))
+    if not random_selection:
+        _display_results(console, spells, _resolve_visible_cols(show_cols, hide_cols, add_cols))
 
-    if selection:
-        selected = console.input(f"Which one would you like to view (1-{len(spells)}; 0 to quit)? ").strip()
-        if selected != "0":
-            _display_single(console, spells[(int(selected) - 1)])
+    if not no_selection:
+        if random_selection:
+            selected = random.randint(0, len(spells)-1)
+            _display_single(console, spells[selected])
+        else:
+            selected = console.input(f"Which one would you like to view (1-{len(spells)}; 0 to quit)? ").strip()
+            if selected != "0":
+                _display_single(console, spells[(int(selected) - 1)])
 
 
 def _build_criteria(

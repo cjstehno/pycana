@@ -138,22 +138,6 @@ def clear_db(db_path: str) -> None:
         conn.commit()
 
 
-# FIXME: list spells matching criteria - as AND
-# FIXME: document the query stuff
-# wildcard matching: book, name, category, range, duration, casting-time, description
-# equal to: level, ritual, guild
-# equal to or one of: school, casters
-#
-# wildcard matching - book='chest' ==> Dead Man's Chest (case insensitive contains)
-#
-# equal to - level=3, ritual=True, guild=False
-#
-# one-of - casters='(Wizard, Warlock)' ==> wizard OR warlock
-# equal to - casters=wizard
-#
-# should also support global='foo' which will find all with any field containing
-
-
 def find_spells(
     db_path: str,
     criteria: Optional[SpellCriteria] = None,
