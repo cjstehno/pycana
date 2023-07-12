@@ -1,9 +1,18 @@
 # Stuff to Do
 
 - documentation
-- provide OGL content .xml.gz file (full - testing is missing some)
-- typechecking
-- formatting
 - finish testing
-- add command to select a random spell (or multiple) matching query criteria
-- add ability to generate spell lists from caster, and spell counts at levels
+
+- ability to load the default visible columns from config file
+- specify other defaults from config?
+
+Add export to find (at selection time):
+- export to xml or pdf (current shown spells)
+
+Make "listing" command
+- --caster
+- --spell-level
+- --number
+- --school (allow multiple)
+- --category (allow multiple)
+- --export as pdf or xml
