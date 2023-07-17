@@ -38,18 +38,21 @@ TBD... flexible ways to filter the list of spells in the database.
 
 ## Development
 
-Run `make virtualenvironement` in the project directory to setup the virtual environment in the `.venv` directory - 
+> This project uses [Task](https://taskfile.dev) for development tasks. It will need to be installed before developing, if you want 
+> to use the tools.
+
+Run `task setup-dev` in the project directory to setup the virtual environment in the `.venv` directory - 
 if you don't already have one setup for use.
 
 The first time you try to run (for development) locally, you will need to run (in the project root):
 
     python setup.py develop
 
-(This will not be required if you have recently run the `make virtualenvironment` task).
+(This will not be required if you have recently run the `task setup-dev` task).
 
 When running the application locally, you need to run it from the `pycana` subdirectory of the project.
 
-See the `Makefile` for other available tasks, such as running lints and tests.
+See the `Taskfile.yml` for other available tasks. You can also run `task --list` for available tasks.
 
 ## Building
 

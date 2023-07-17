@@ -9,6 +9,7 @@ from pycana.services.xml_loader import load_all_spells
 
 # FIXME: add support for text format (spellbook text - .sbk or .sbk.gz)
 
+
 @click.command()
 @click.option(
     "--source-directory",

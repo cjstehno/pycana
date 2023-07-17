@@ -1,0 +1,50 @@
+# See: https://taskfile.dev/
+
+version: '3'
+
+tasks:
+    default: 
+        descr: The default task (builds a distribution).
+        deps: [dist]
+        
+    setup-dev:
+        desc: Sets up your local development virtual environment.
+        cmds:
+            - python -m venv .venv
+            - .venv/bin/pip install -r requirements-dev.txt
+            - .venv/bin/python setup.py develop
+            - echo 'Virtual Environment (dev) setup.'
+
+    test:
+        desc: Runs the unit tests with coverage.
+        cmd: python -m pytest --html=report.html --self-contained-html --cov=pycana --cov-report=term --cov-report=html:coverage-report tests/
+
+    lint:
+        desc: Runs the linter on the project.
+        cmd: python -m pylint pycana
+
+    format:
+        desc: Runs the formatter on the project.
+        cmd: python -m black -l 120 pycana tests
+
+    typing:
+        desc: Runs the type checker on the project.
+        cmd: python -m mypy pycana
+
+    check:
+        desc: Runs the quality-checking tools on the project.
+        deps: [typing, lint, format, test]
+        
+    dist: 
+        desc: Builds the project distribution.
+        deps: [clean, check]
+        cmd: python -m build --no-isolation
+
+    clean:
+        desc: Cleans the generated transient files from the project.
+        cmds:
+            - rm -rf dist/*
+            - rm -rf coverage-report/
+            - rm report.html
+            - rm -rf pycana.egg-info/
+            

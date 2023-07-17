@@ -24,7 +24,7 @@ from pycana.services.xml_loader import load_spells
     "--source-compressed",
     is_flag=True,
     default=False,
-    help="Specifies that the compressed XML files will be loaded, rather than the uncompressed."
+    help="Specifies that the compressed XML files will be loaded, rather than the uncompressed.",
 )
 @click.option(
     "--dest-directory",
@@ -32,10 +32,7 @@ from pycana.services.xml_loader import load_spells
     help="The directory where the converted files will saved.",
 )
 @click.option(
-    "--dest-compressed",
-    is_flag=True,
-    default=False,
-    help="Specifies that the generated files will be compressed."
+    "--dest-compressed", is_flag=True, default=False, help="Specifies that the generated files will be compressed."
 )
 @click.option("--verbose", is_flag=True, help="Enables more extensive logging messages.", default=False)
 def convert(
@@ -51,14 +48,14 @@ def convert(
     """
     console = Console()
 
-    source_state = 'compressed ' if source_compressed else ''
-    dest_state = 'compressed ' if dest_compressed else ''
+    source_state = "compressed " if source_compressed else ""
+    dest_state = "compressed " if dest_compressed else ""
 
     console.print(
         f"Converting {source_state}files in '{source_directory}' to {dest_state}files in '{dest_directory}'...",
     )
 
-    src_suffix = '.xml.gz' if source_compressed else '.xml'
+    src_suffix = ".xml.gz" if source_compressed else ".xml"
 
     dest_root = Path(dest_directory)
     dest_root.mkdir(parents=True, exist_ok=True)
@@ -66,15 +63,15 @@ def convert(
     for file in filter(lambda f: f.endswith(src_suffix), os.listdir(source_directory)):
         spells = load_spells(console, str(Path(source_directory, file)), verbose=verbose)
 
-        sbk_path = Path(dest_root, file.replace(src_suffix, '.sbk.gz' if dest_compressed else '.sbk'))
+        sbk_path = Path(dest_root, file.replace(src_suffix, ".sbk.gz" if dest_compressed else ".sbk"))
 
         console.print(f"Writing {len(spells)} spells into {sbk_path}", style="yellow")
 
         if dest_compressed:
-            with gzip.open(sbk_path, "wt", encoding='utf-8') as sbk_file:
+            with gzip.open(sbk_path, "wt", encoding="utf-8") as sbk_file:
                 _write_spells(sbk_file, spells)
         else:
-            with open(sbk_path, "w", encoding='utf-8') as sbk_file:
+            with open(sbk_path, "w", encoding="utf-8") as sbk_file:
                 _write_spells(sbk_file, spells)
 
         console.print(f" \u221f Wrote {len(spells)} spells into {sbk_path}", style="green i")
@@ -83,16 +80,16 @@ def convert(
 def _write_spells(sbk_file, spells: List[Spell]) -> None:
     # Write the header (assuming all spells in bundle are same book)
     _write_field(sbk_file, "book", spells[0].book)
-    _write_field(sbk_file, "guild", 'Y' if spells[0].guild else 'N')
-    sbk_file.write('\n\n')
+    _write_field(sbk_file, "guild", "Y" if spells[0].guild else "N")
+    sbk_file.write("\n\n")
 
     for spell in spells:
         _write_field(sbk_file, "name", spell.name)
         _write_field(sbk_file, "level", str(spell.level))
         _write_field(sbk_file, "school", spell.school.name)
-        _write_field(sbk_file, "category", spell.category if spell.category is not None else '')
+        _write_field(sbk_file, "category", spell.category if spell.category is not None else "")
         _write_field(sbk_file, "casting-time", spell.casting_time)
-        _write_field(sbk_file, "ritual", 'Y' if spell.ritual else 'N')
+        _write_field(sbk_file, "ritual", "Y" if spell.ritual else "N")
         _write_field(sbk_file, "range", spell.range)
         _write_field(sbk_file, "duration", spell.duration)
         _write_field(sbk_file, "components", _display_components(spell.components, details=True))

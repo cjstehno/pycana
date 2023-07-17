@@ -109,8 +109,19 @@ def find(
     spells = find_spells(
         resolve_db_path(db_file),
         _build_criteria(
-            book, name, category, level, ritual, guild, caster, school,
-            range, duration, casting_time, description, general,
+            book,
+            name,
+            category,
+            level,
+            ritual,
+            guild,
+            caster,
+            school,
+            range,
+            duration,
+            casting_time,
+            description,
+            general,
         ),
         limit,
         sort_by,
@@ -125,12 +136,12 @@ def find(
 
     if not no_selection:
         if random_selection:
-            selected = random.randint(0, len(spells)-1)
+            selected = random.randint(0, len(spells) - 1)
             _display_single(console, spells[selected])
         else:
-            selected = console.input(f"Which one would you like to view (1-{len(spells)}; 0 to quit)? ").strip()
-            if selected != "0":
-                _display_single(console, spells[(int(selected) - 1)])
+            selected = int(console.input(f"Which one would you like to view (1-{len(spells)}; 0 to quit)? ").strip())
+            if selected != 0:
+                _display_single(console, spells[selected - 1])
 
 
 def _build_criteria(
