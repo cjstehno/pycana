@@ -165,8 +165,10 @@ class SpellCriteria:
             SpellCriteria._apply_clause(general_clauses, "school", value)
             SpellCriteria._apply_clause(general_clauses, "casters", value)
 
+        general_clause_sql = " OR ".join(general_clauses)
+
         if len(general_clauses) > 0:
-            clauses.append(" OR ".join(general_clauses))
+            clauses.append(f"({general_clause_sql})")
 
     @staticmethod
     def _apply_clause(clauses: List[str], name: str, value: Optional[str]) -> None:

@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='pycana',
-    version='0.0.2',
+    version='0.0.3',
     description='Spell searching tool.',
     long_description='Spell searching tool.',
     long_description_content_type='text/markdown',

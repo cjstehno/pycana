@@ -131,6 +131,8 @@ def find(
         console.print("No spells found matching your criteria.", style="yellow b i")
         return
 
+    # FIXME: if there is only one result - just show it?
+
     if not random_selection:
         _display_results(console, spells, _resolve_visible_cols(show_cols, hide_cols, add_cols))
 
