@@ -86,7 +86,7 @@ def test_find_with_caster2(spells_db: str, spells_from: Callable[[str], List[Spe
             "--show-cols=name,casters",
             "--no-selection",
             "--caster",
-            'bard',
+            "bard",
         ],
     )
 
@@ -111,9 +111,9 @@ def test_find_with_caster_general(spells_db: str, spells_from: Callable[[str], L
             "--show-cols=name,casters",
             "--no-selection",
             "--caster",
-            'cleric',
+            "cleric",
             "--general",
-            "heal"
+            "heal",
         ],
     )
 
@@ -126,4 +126,3 @@ def test_find_with_caster_general(spells_db: str, spells_from: Callable[[str], L
     lines = result.output.splitlines()
     for line in lines:
         print(line)
-

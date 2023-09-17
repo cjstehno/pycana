@@ -45,6 +45,6 @@ tasks:
         cmds:
             - rm -rf dist/*
             - rm -rf coverage-report/
-            - rm report.html
+            - rm -f report.html
             - rm -rf pycana.egg-info/
             

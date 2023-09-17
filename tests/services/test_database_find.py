@@ -21,54 +21,55 @@ from pycana.services.database import load_db, find_spells
 # description
 # combinations
 
+
 @pytest.mark.parametrize(
     "casters, expected_spells",
     [
         ("warlock", ["Astral Projection"]),
-        ("bard", ['Awaken', 'Animate Objects', 'Animal Messenger', 'Animal Friendship']),
-        ("cleric", ['Augury', 'Aid', 'Animate Dead', 'Astral Projection', 'Antimagic Field']),
+        ("bard", ["Awaken", "Animate Objects", "Animal Messenger", "Animal Friendship"]),
+        ("cleric", ["Augury", "Aid", "Animate Dead", "Astral Projection", "Antimagic Field"]),
         (
             "druid",
             [
-                'Animal Friendship',
-                'Animal Messenger',
-                'Animal Shapes',
-                'Antilife Shell',
-                'Antipathy or Sympathy',
-                'Awaken',
+                "Animal Friendship",
+                "Animal Messenger",
+                "Animal Shapes",
+                "Antilife Shell",
+                "Antipathy or Sympathy",
+                "Awaken",
             ],
         ),
         (
             "wizard",
             [
-                'Acid Splash',
-                'Alarm',
-                'Alter Self',
-                'Animate Dead',
-                'Animate Objects',
-                'Antimagic Field',
-                'Antipathy or Sympathy',
-                'Arcane Eye',
-                'Arcane Lock',
-                'Astral Projection',
-            ]
+                "Acid Splash",
+                "Alarm",
+                "Alter Self",
+                "Animate Dead",
+                "Animate Objects",
+                "Antimagic Field",
+                "Antipathy or Sympathy",
+                "Arcane Eye",
+                "Arcane Lock",
+                "Astral Projection",
+            ],
         ),
         (
             "('wizard', 'cleric')",
             [
-                'Acid Splash',
-                'Aid',
-                'Alarm',
-                'Alter Self',
-                'Animate Dead',
-                'Animate Objects',
-                'Antimagic Field',
-                'Antipathy or Sympathy',
-                'Arcane Eye',
-                'Arcane Lock',
-                'Astral Projection',
-                'Augury',
-            ]
+                "Acid Splash",
+                "Aid",
+                "Alarm",
+                "Alter Self",
+                "Animate Dead",
+                "Animate Objects",
+                "Antimagic Field",
+                "Antipathy or Sympathy",
+                "Arcane Eye",
+                "Arcane Lock",
+                "Astral Projection",
+                "Augury",
+            ],
         ),
     ],
 )
@@ -95,14 +96,18 @@ def test_find_with_caster(
         ("wizard", "water", ["Alter Self", "Conjure Elemental", "Contingency", "Control Water"]),
         ("wizard", "heal", []),
         ("cleric", "heal", ["Beacon of Hope", "Cure Wounds"]),
-        ("('wizard','cleric')", "water", [
-            'Alter Self',
-            'Conjure Elemental',
-            'Contingency',
-            'Control Water',
-            'Create Food and Water',
-            'Create or Destroy Water',
-        ])
+        (
+            "('wizard','cleric')",
+            "water",
+            [
+                "Alter Self",
+                "Conjure Elemental",
+                "Contingency",
+                "Control Water",
+                "Create Food and Water",
+                "Create or Destroy Water",
+            ],
+        ),
     ],
 )
 def test_find_with_caster_general(
